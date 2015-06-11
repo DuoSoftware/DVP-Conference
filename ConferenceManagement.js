@@ -225,6 +225,51 @@ function GetRoomDetails(CID,reqId,callback)
     }
 }
 
+function MapWithCloudEndUser(CfName,CldId,reqId,callback)
+{
+    try {
+        DbConn.Conference.find({where: [{ConferenceName: CfName},{CompanyId:'1'},{TenantId:'1'}]}).complete(function (errCf, resCf) {
+            if (errCf) {
+                callback(errCf,undefined);
+            }
+            else {
+                if (resCf != null) {
+                    DbConn.CloudEndUser.find({where:[{id:CldId},{CompanyId:'1'},{TenantId:'1'}]}).complete(function (errCld,resCld) {
+                        if(errCld)
+                        {
+                            callback(errCld,undefined);
+                        }
+                        else
+                        {
+                            if(resCld!=null)
+                            {
+                                resCld.addConference(resCf).complete(function (errMap,resMap)
+                                {
+                                    callback(errMap,resMap);
+                                });
+                            }
+                            else
+                            {
+                                callback(new Error("No cloud end user"),undefined);
+                            }
+                        }
+
+                    });
+                }
+                else {
+                    callback(new Error("No conference"),undefined);
+                }
+            }
+        });
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+}
+
+
+
 function CheckTimeValidity(CName,reqId,callback)
 {
     DbConn.Conference.find({where:[{ConferenceName:CName}]}).complete(function (errConf,resConf) {
@@ -246,7 +291,7 @@ function CheckTimeValidity(CName,reqId,callback)
                 }
                 else
                 {
-                   callback(true);
+                    callback(true);
                 }
             }
             else
@@ -265,3 +310,4 @@ module.exports.DeleteConference = DeleteConference;
 module.exports.UpdateStartEndTimes = UpdateStartEndTimes;
 module.exports.GetConferenceRoomsOfCompany = GetConferenceRoomsOfCompany;
 module.exports.GetRoomDetails = GetRoomDetails;
+module.exports.MapWithCloudEndUser = MapWithCloudEndUser;

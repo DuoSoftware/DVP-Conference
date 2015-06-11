@@ -141,7 +141,7 @@ function MapWithRoom(usrId,rmName,reqId,callback)
                                     resRoom.addConferenceUser(resUser).complete(function (errMap,resMap)
                                     {
                                         callback(errMap,resMap);
-                                    })
+                                    });
                                 }
                                 else
                                 {
