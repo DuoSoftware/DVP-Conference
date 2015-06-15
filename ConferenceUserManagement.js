@@ -172,6 +172,9 @@ function DeleteUser(usrId,reqId,callback)
 {
     try
     {
+
+
+
         DbConn.ConferenceUser.find({where:[{id:usrId}],include:[{model:DbConn.Conference,as : "Conference"}]}).complete(function (errConf,resConf) {
             if(errConf)
             {

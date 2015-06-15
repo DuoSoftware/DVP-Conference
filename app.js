@@ -9,6 +9,8 @@ var uuid = require('node-uuid');
 var cors = require('cors');
 var Room=require('./ConferenceManagement.js');
 var User=require('./ConferenceUserManagement.js');
+var DbConn = require('DVP-DBModels');
+var moment=require('moment');
 
 
 var port = config.Host.port || 3000;
@@ -647,4 +649,30 @@ RestServer.get('/DVP/API/'+version+'/ConferenceApi/ConferenceUser/:UserId',funct
         res.end(jsonString);
     }
     next();
+});
+
+
+RestServer.get('/test',function(err,res,next)
+{
+
+    var s=moment.utc(new Date()).format("YYYY-MM-DD HH:mm:ss");
+    console.log(s);
+//var x=new Date();
+    var dt=new Date();
+    var xx=new Date(dt.valueOf() + dt.getTimezoneOffset() * 60000);
+    console.log(xx);
+    var conditionalData = {
+        StartTime: {
+            lt: [xx]
+        },
+        EndTime:
+        {
+            gt:[xx]
+        }
+    };
+    DbConn.Conference.find({where:conditionalData}).complete(function(e,r)
+    {
+
+        res.end(JSON.stringify(r));
+    });
 });

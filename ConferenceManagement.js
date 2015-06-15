@@ -86,6 +86,84 @@ function UpdateConference(CName,obj,reqId,callback)
 {
     try
     {
+        var dt=new Date();
+        var xx=new Date(dt.valueOf() + dt.getTimezoneOffset() * 60000);
+        console.log(xx);
+        var conditionalData = {
+            StartTime: {
+                lt: [xx]
+            },
+            EndTime:
+            {
+                gt:[xx]
+            },
+            ConferenceName:CName
+        };
+        DbConn.Conference.findAll({where:conditionalData}).complete(function(errCnf,resCnf)
+        {
+            if(errCnf)
+            {
+                callback(errCnf,undefined);
+            }
+            else
+            {
+                if(resCnf.length==0)
+                {
+                    DbConn.Conference.update(
+                        {
+                            Pin:obj.Pin,
+                            AllowAnonymousUser:obj.AllowAnonymousUser,
+                            Domain:obj.Domain,
+                            IsLocked:obj.IsLocked,
+                            MaxUser:obj.MaxUser
+
+                        },
+                        {
+                            where:[{ConferenceName:CName}]
+                        }
+
+                    ).then(function(resCUpdate){
+                            callback(undefined,resCUpdate);
+                        }).error(function(errCUpdate)
+                        {
+                            callback(errCUpdate,undefined);
+                        });
+                }
+                else
+                {
+                    callback(new Error("Running Conference"),undefined);
+                }
+            }
+        });
+
+        /* CheckTimeValidity(CName,reqId,function(status)
+         {
+         if(status)
+         {
+         DbConn.Conference.destroy({where:[{ConferenceName:CName}]}).then(function(result)
+         {
+         callback(undefined,result);
+         }).error(function(err)
+         {
+         callback(err,undefined);
+         });
+         }
+         else
+         {
+         callback(new Error("Deletion Failed"),undefined);
+         }
+         });
+         */
+
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+
+/*
+    try
+    {
         CheckTimeValidity(CName,reqId,function(status)
         {
             if(status)
@@ -121,13 +199,49 @@ function UpdateConference(CName,obj,reqId,callback)
     {
         callback(ex,undefined);
     }
+    */
 }
 
 function DeleteConference(CName,reqId,callback)
 {
     try
     {
-        CheckTimeValidity(CName,reqId,function(status)
+        var dt=new Date();
+        var xx=new Date(dt.valueOf() + dt.getTimezoneOffset() * 60000);
+        console.log(xx);
+        var conditionalData = {
+            StartTime: {
+                lt: [xx]
+            },
+            EndTime:
+            {
+                gt:[xx]
+            },
+            ConferenceName:CName
+        };
+        DbConn.Conference.findAll({where:conditionalData}).complete(function(errCnf,resCnf)
+        {
+            if(errCnf)
+            {
+                callback(errCnf,undefined);
+            }
+            else
+            {
+                if(resCnf.length==0)
+                {
+                    DbConn.Conference.destroy({where:[{ConferenceName:CName}]}).complete(function(errDel,resDel)
+                    {
+                       callback(errDel,resDel);
+                    });
+                }
+                else
+                {
+                    callback(new Error("Running Conference"),undefined);
+                }
+            }
+        });
+
+       /* CheckTimeValidity(CName,reqId,function(status)
         {
             if(status)
             {
@@ -144,7 +258,7 @@ function DeleteConference(CName,reqId,callback)
                 callback(new Error("Deletion Failed"),undefined);
             }
         });
-
+        */
 
     }
     catch(ex)
@@ -155,6 +269,84 @@ function DeleteConference(CName,reqId,callback)
 
 function UpdateStartEndTimes(CName,obj,reqId,callback)
 {
+
+    try
+    {
+        var dt=new Date();
+        var xx=new Date(dt.valueOf() + dt.getTimezoneOffset() * 60000);
+        console.log(xx);
+        var conditionalData = {
+            StartTime: {
+                lt: [xx]
+            },
+            EndTime:
+            {
+                gt:[xx]
+            },
+            ConferenceName:CName
+        };
+        DbConn.Conference.findAll({where:conditionalData}).complete(function(errCnf,resCnf)
+        {
+            if(errCnf)
+            {
+                callback(errCnf,undefined);
+            }
+            else
+            {
+                if(resCnf.length==0)
+                {
+                    DbConn.Conference.update(
+                        {
+                            StartTime:obj.StartTime,
+                            EndTime:obj.EndTime
+
+
+                        },
+                        {
+                            where:[{ConferenceName:CName}]
+                        }
+
+                    ).then(function(resCUpdate){
+                            callback(undefined,resCUpdate);
+                        }).error(function(errCUpdate)
+                        {
+                            callback(errCUpdate,undefined);
+                        });
+                }
+                else
+                {
+                    callback(new Error("Running Conference"),undefined);
+                }
+            }
+        });
+
+        /* CheckTimeValidity(CName,reqId,function(status)
+         {
+         if(status)
+         {
+         DbConn.Conference.destroy({where:[{ConferenceName:CName}]}).then(function(result)
+         {
+         callback(undefined,result);
+         }).error(function(err)
+         {
+         callback(err,undefined);
+         });
+         }
+         else
+         {
+         callback(new Error("Deletion Failed"),undefined);
+         }
+         });
+         */
+
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+
+
+   /*
     try
     {
         CheckTimeValidity(CName,reqId,function(status)
@@ -191,6 +383,7 @@ function UpdateStartEndTimes(CName,obj,reqId,callback)
     {
         callback(ex,undefined);
     }
+    */
 }
 
 function GetConferenceRoomsOfCompany(CID,reqId,callback)
