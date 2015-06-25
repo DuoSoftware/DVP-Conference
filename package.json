@@ -1,7 +1,6 @@
 {
   "name": "DVP-Conference",
   "version": "1.0.0",
-  "description": "",
   "main": "app.js",
   "dependencies": {
     "config": "^1.14.0",
