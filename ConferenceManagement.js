@@ -77,7 +77,7 @@ function AddConferenceRoom(obj,reqId,callback){
     }
     catch(ex)
     {
-        logger.error('[DVP-Conference.NewConference] - [%s] - [PGSQL] - Invalid object received at the start : SaveUACRec %s',reqId,JSON.stringify(obj),ex);
+        logger.error('[DVP-Conference.NewConference] - [%s] - [PGSQL] - Invalid object received at the start : SaveUser %s',reqId,JSON.stringify(obj),ex);
         callback(ex,undefined);
     }
 }
