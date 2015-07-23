@@ -7,30 +7,30 @@ var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
 var moment=require('moment');
 
 
-function AddConferenceRoom(obj,reqId,callback){
+function AddConferenceRoom(obj,Company,Tenant,reqId,callback){
 
     try
     {
-        DbConn.Extension.find({where:[{Extension:obj.Extension} ,{CompanyId:obj.CompanyId},{TenantId:obj.TenantId}]}).complete(function(err,resExt)
+        DbConn.Extension.find({where:[{Extension:obj.Extension} ,{CompanyId:Company},{TenantId:Tenant}]}).complete(function(err,resExt)
         {
             if(err)
             {
-                logger.error('[DVP-Conference.NewConference] - [%s] - [PGSQL] - Error in searching Extension %s',reqId,JSON.stringify(obj),err);
+                //logger.error('[DVP-Conference.NewConference] - [%s] - [PGSQL] - Error in searching Extension %s',reqId,JSON.stringify(obj),err);
                 callback(err,undefined);
             }
             else
             {
-                if(resExt!=null)
+                if(resExt)
                 {
-                    logger.debug('[DVP-Conference.NewConference] - [%s] - [PGSQL] - Found Extension %s',reqId,JSON.stringify(resExt));
+                    //logger.debug('[DVP-Conference.NewConference] - [%s] - [PGSQL] - Found Extension %s',reqId,JSON.stringify(resExt));
 
                     var ConfObj = DbConn.Conference
                         .build(
                         {
                             ConferenceName : obj.ConferenceName,
                             Description : obj.Description,
-                            CompanyId :  obj.CompanyId,
-                            TenantId: obj.TenantId,
+                            CompanyId :  Company,
+                            TenantId: Tenant,
                             ObjClass : "ConfClz",
                             ObjType :"ConfTyp",
                             ObjCategory:"ConfCat",
@@ -69,7 +69,7 @@ function AddConferenceRoom(obj,reqId,callback){
                 }
                 else
                 {
-                    logger.error('[DVP-Conference.NewConference] - [%s] - [PGSQL] - Empty returns in searching Extension %s',reqId,JSON.stringify(obj),ex);
+                    //logger.error('[DVP-Conference.NewConference] - [%s] - [PGSQL] - Empty returns in searching Extension %s',reqId,JSON.stringify(obj),ex);
                     callback(new Error("Empty returns for Extension"),undefined);
                 }
             }

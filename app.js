@@ -48,13 +48,14 @@ RestServer.post('/DVP/API/'+version+'/ConferenceApi/ConferenceRoom',function(req
     {
 
     }
-
+var Company=1;
+    var Tenant=1;
 
     //log.info("\n.............................................Add appointment Starts....................................................\n");
     try {
         //log.info("Inputs : "+req.body);
         //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Request received -  Data - %s ',reqId,JSON.stringify(req.body));
-        Room.AddConferenceRoom(req.body,reqId,function(err,resz)
+        Room.AddConferenceRoom(req.body,Company,Tenant,reqId,function(err,resz)
         {
 
             if(err)
@@ -138,7 +139,7 @@ RestServer.post('/DVP/API/'+version+'/ConferenceApi/ConferenceRoom/:ConfName',fu
     next();
 });
 
-RestServer.post('/DVP/API/'+version+'/ConferenceApi/ConferenceRoomTimes/:ConfName',function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/ConferenceApi/ConferenceRoom/:ConfName/Time',function(req,res,next)
 {
     var reqId='';
 
@@ -189,7 +190,7 @@ RestServer.post('/DVP/API/'+version+'/ConferenceApi/ConferenceRoomTimes/:ConfNam
     next();
 });
 
-RestServer.post('/DVP/API/'+version+'/ConferenceApi/Conference/:CfName/MapWithCloudEndUser/:CloudUserId',function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/ConferenceApi/Conference/:CfName/AssignCloudEndUser/:CloudUserId',function(req,res,next)
 {
     var reqId='';
 
@@ -303,13 +304,14 @@ RestServer.post('/DVP/API/'+version+'/ConferenceApi/ConferenceUser',function(req
     {
 
     }
-
+var Company= 1;
+    var Tenant=1;
 
     //log.info("\n.............................................Add appointment Starts....................................................\n");
     try {
         //log.info("Inputs : "+req.body);
         //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Request received -  Data - %s ',reqId,JSON.stringify(req.body));
-        User.AddConferenceUser(req.body,reqId,function(err,resz)
+        User.AddConferenceUser(req.body,Company,Tenant,reqId,function(err,resz)
         {
 
             if(err)
@@ -342,7 +344,7 @@ RestServer.post('/DVP/API/'+version+'/ConferenceApi/ConferenceUser',function(req
     next();
 });
 
-RestServer.post('/DVP/API/'+version+'/ConferenceApi/ConferenceUser/:UserId/MapWithRoom/:RoomName',function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/ConferenceApi/ConferenceUser/:UserId/AssignToRoom/:RoomName',function(req,res,next)
 {
     var reqId='';
 
@@ -360,7 +362,7 @@ RestServer.post('/DVP/API/'+version+'/ConferenceApi/ConferenceUser/:UserId/MapWi
     try {
         //log.info("Inputs : "+req.body);
         //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Request received -  Data - %s ',reqId,JSON.stringify(req.body));
-        User.MapWithRoom(parseInt(req.params.UserId),req.params.RoomName,reqId,function(err,resz)
+        User.MapWithRoom(req.params.UserId,req.params.RoomName,reqId,function(err,resz)
         {
 
             if(err)
@@ -393,7 +395,7 @@ RestServer.post('/DVP/API/'+version+'/ConferenceApi/ConferenceUser/:UserId/MapWi
     next();
 });
 
-RestServer.post('/DVP/API/'+version+'/ConferenceApi/UserFlags/:UserId',function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/ConferenceApi/ConferenceUser/:UserId/Mode',function(req,res,next)
 {
     var reqId='';
 
@@ -411,7 +413,7 @@ RestServer.post('/DVP/API/'+version+'/ConferenceApi/UserFlags/:UserId',function(
     try {
         //log.info("Inputs : "+req.body);
         //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Request received -  Data - %s ',reqId,JSON.stringify(req.body));
-        User.SetUserFlags(parseInt(req.params.UserId),req.body,reqId,function(err,resz)
+        User.SetUserFlags(req.params.UserId,req.body,reqId,function(err,resz)
         {
 
             if(err)
@@ -498,7 +500,7 @@ RestServer.del('/DVP/API/'+version+'/ConferenceApi/ConferenceUser/:UserId',funct
 
 
 
-RestServer.get('/DVP/API/'+version+'/ConferenceApi/ConferenceRoomsOfCompany/:CompId',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/ConferenceApi/ConferenceRooms',function(req,res,next)
 {
     var reqId='';
 
@@ -510,13 +512,14 @@ RestServer.get('/DVP/API/'+version+'/ConferenceApi/ConferenceRoomsOfCompany/:Com
     {
 
     }
-
+var Company=1;
+    var Tenant=1;
 
     //log.info("\n.............................................Add appointment Starts....................................................\n");
     try {
         //log.info("Inputs : "+req.body);
         //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Request received -  Data - %s ',reqId,JSON.stringify(req.body));
-        Room.GetConferenceRoomsOfCompany(req.params.CompId,reqId,function(err,resz)
+        Room.GetConferenceRoomsOfCompany(Company,reqId,function(err,resz)
         {
 
             if(err)

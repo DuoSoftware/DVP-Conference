@@ -8,13 +8,15 @@ var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
 var moment=require('moment');
 
 
-function AddConferenceUser(obj,reqId,callback)
+function AddConferenceUser(obj,Company,Tenant,reqId,callback)
 {
+
+
     if(obj.ObjCategory=='Internal')
     {
         try
         {
-            DbConn.SipUACEndpoint.find({where:[{SipUserUuid:obj.SipUserUuid},{CompanyId:obj.CompanyId},{TenantId:obj.TenantId}]}).complete(function(errSip,resSip)
+            DbConn.SipUACEndpoint.find({where:[{SipUserUuid:obj.SipUserUuid},{CompanyId:Company},{TenantId:Tenant}]}).complete(function(errSip,resSip)
             {
                 if(errSip)
                 {
@@ -22,7 +24,7 @@ function AddConferenceUser(obj,reqId,callback)
                 }
                 else
                 {
-                    if(resSip!=null)
+                    if(resSip)
                     {
                         var CUserObj = DbConn.ConferenceUser
                             .build(
@@ -32,7 +34,7 @@ function AddConferenceUser(obj,reqId,callback)
                                 Mute :  obj.Mute,
                                 Mod: obj.Mod,
                                 ObjClass : "ConfClz",
-                                ObjType :obj.ObjType,
+                                ObjType :"TYP",
                                 ObjCategory:obj.ObjCategory,
                                 CurrentDef: obj.CurrentDef,
                                 CurrentMute: obj.CurrentMute,
@@ -124,7 +126,7 @@ function MapWithRoom(usrId,rmName,reqId,callback)
             }
             else
             {
-                if(resRoom!=null)
+                if(resRoom)
                 {
                     try
                     {
@@ -136,7 +138,7 @@ function MapWithRoom(usrId,rmName,reqId,callback)
                             }
                             else
                             {
-                                if(resUser!=null)
+                                if(resUser)
                                 {
                                     resRoom.addConferenceUser(resUser).complete(function (errMap,resMap)
                                     {
