@@ -12,7 +12,7 @@ function AddConferenceUser(obj,Company,Tenant,reqId,callback)
 {
 
 
-    if(obj.ObjCategory=='Internal')
+    if(obj.ObjCategory=='INTERNAL')
     {
         try
         {
