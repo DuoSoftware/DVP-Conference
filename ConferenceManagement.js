@@ -124,7 +124,7 @@ function UpdateConference(CName,obj,reqId,callback)
 
                     ).then(function(resCUpdate){
                             callback(undefined,resCUpdate);
-                        }).error(function(errCUpdate)
+                        }).catch(function(errCUpdate)
                         {
                             callback(errCUpdate,undefined);
                         });
@@ -308,7 +308,7 @@ function UpdateStartEndTimes(CName,obj,reqId,callback)
 
                     ).then(function(resCUpdate){
                             callback(undefined,resCUpdate);
-                        }).error(function(errCUpdate)
+                        }).catch(function(errCUpdate)
                         {
                             callback(errCUpdate,undefined);
                         });

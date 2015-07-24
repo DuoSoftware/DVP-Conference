@@ -190,7 +190,7 @@ RestServer.post('/DVP/API/'+version+'/ConferenceApi/ConferenceRoom/:ConfName/Tim
     next();
 });
 
-RestServer.post('/DVP/API/'+version+'/ConferenceApi/Conference/:CfName/AssignCloudEndUser/:CloudUserId',function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/ConferenceApi/ConferenceRoom/:CfName/AssignCloudEndUser/:CloudUserId',function(req,res,next)
 {
     var reqId='';
 

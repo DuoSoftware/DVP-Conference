@@ -234,7 +234,7 @@ function SetUserFlags(usrId,obj,reqId,callback)
 
         ).then(function(resUsrUpdate){
                 callback(undefined,resUsrUpdate);
-            }).error(function(errUsrUpdate)
+            }).catch(function(errUsrUpdate)
             {
                 callback(errUsrUpdate,undefined);
 
