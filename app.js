@@ -25,7 +25,9 @@ var RestServer = restify.createServer({
 {
 
 });
-RestServer.use(cors());
+restify.CORS.ALLOW_HEADERS.push('authorization');
+RestServer.use(restify.CORS());
+RestServer.use(restify.fullResponse());
 //Server listen
 RestServer.listen(port, function () {
     console.log('%s listening at %s', RestServer.name, RestServer.url);
