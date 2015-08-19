@@ -1,11 +1,23 @@
 /**
  * Created by Pawan on 6/10/2015.
  */
-
+var httpReq = require('request');
+var util = require('util');
 var DbConn = require('DVP-DBModels');
+var redis=require('redis');
+var config=require('config');
 var messageFormatter = require('DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
 var moment=require('moment');
+
+var port = config.Redis.port || 3000;
+var ip = config.Redis.ip;
+
+
+var client = redis.createClient(port,ip);
+client.on("error", function (err) {
+    console.log("Error " + err);
+});
 
 
 function AddConferenceUser(obj,Company,Tenant,reqId,callback)
@@ -252,20 +264,20 @@ function GetUserDetails(usrId,reqId,callback)
     {
         DbConn.ConferenceUser.find({where:[{id:usrId}]}).complete(function(errUsr,resUsr)
         {
-           if(errUsr)
-           {
-              callback(errUsr,undefined);
-           }
+            if(errUsr)
+            {
+                callback(errUsr,undefined);
+            }
             else
-           {
-               if(resUsr!=null)
-               {
-                   callback(undefined,resUsr);
-               }else
-               {
-                   callback(new Error("No user"),undefined);
-               }
-           }
+            {
+                if(resUsr!=null)
+                {
+                    callback(undefined,resUsr);
+                }else
+                {
+                    callback(new Error("No user"),undefined);
+                }
+            }
         });
     }
     catch(ex)
@@ -280,8 +292,702 @@ function CkeckTimeValidity(StTm,EdTm,reqId)
     return x;
 }
 
+//Sprint 4
+function MuteUser(confName,User,reqId,callback)
+{
+    GetConferenceID(confName,reqId,function(errConf,resConf)
+    {
+        if(errConf)
+        {
+            callback(errConf,undefined);
+        }
+        else
+        {
+            GetCallServerID(resConf,reqId,function(errCS,resCS)
+            {
+                if(errCS)
+                {
+                    callback(errCS,callback);
+                }
+                else
+                {
+                    GetCallserverIP(resCS,reqId,function(errIP,resIP)
+                    {
+                        if(errIP)
+                        {
+                            callback(errIP,undefined);
+                        }
+                        else
+                        {
+                            var httpUrl=resIP+':8080/api/conference?'+confName+" mute ?"+User;
+                            var options = {
+                                url: httpUrl
+                            };
+
+                            httpReq(options, function (error, response, body)
+                            {
+                                if (!error && response.statusCode == 200)
+                                {
+                                    var apiResp = JSON.parse(body);
+
+                                    //logger.debug('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api returned : %s', reqId, body);
+
+                                    callback(apiResp.Exception, apiResp.Result);
+                                }
+                                else
+                                {
+                                    //logger.error('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api call failed', reqId, error);
+                                    callback(error, undefined);
+                                }
+                            });
+                        }
+                    });
+                }
+            })
+        }
+    })
+
+
+
+}
+
+function UnMuteUser(confName,User,reqId,callback)
+{
+    GetConferenceID(confName,reqId,function(errConf,resConf)
+    {
+        if(errConf)
+        {
+            callback(errConf,undefined);
+        }
+        else
+        {
+            GetCallServerID(resConf,reqId,function(errCS,resCS)
+            {
+                if(errCS)
+                {
+                    callback(errCS,callback);
+                }
+                else
+                {
+                    GetCallserverIP(resCS,reqId,function(errIP,resIP)
+                    {
+                        if(errIP)
+                        {
+                            callback(errIP,undefined);
+                        }
+                        else
+                        {
+                            var httpUrl=resIP+':8080/api/conference?'+confName+" unmute ?"+User;
+                            var options = {
+                                url: httpUrl
+                            };
+
+                            httpReq(options, function (error, response, body)
+                            {
+                                if (!error && response.statusCode == 200)
+                                {
+                                    var apiResp = JSON.parse(body);
+
+                                    //logger.debug('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api returned : %s', reqId, body);
+
+                                    callback(apiResp.Exception, apiResp.Result);
+                                }
+                                else
+                                {
+                                    //logger.error('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api call failed', reqId, error);
+                                    callback(error, undefined);
+                                }
+                            });
+                        }
+                    });
+                }
+            })
+        }
+    })
+
+
+
+}
+
+function MuteAllUsers(confName,reqId,callback)
+{
+    GetConferenceID(confName,reqId,function(errConf,resConf)
+    {
+        if(errConf)
+        {
+            callback(errConf,undefined);
+        }
+        else
+        {
+            GetCallServerID(resConf,reqId,function(errCS,resCS)
+            {
+                if(errCS)
+                {
+                    callback(errCS,callback);
+                }
+                else
+                {
+                    GetCallserverIP(resCS,reqId,function(errIP,resIP)
+                    {
+                        if(errIP)
+                        {
+                            callback(errIP,undefined);
+                        }
+                        else
+                        {
+                            var httpUrl=resIP+':8080/api/conference?'+confName+" mute ?all";
+                            var options = {
+                                url: httpUrl
+                            };
+
+                            httpReq(options, function (error, response, body)
+                            {
+                                if (!error && response.statusCode == 200)
+                                {
+                                    var apiResp = JSON.parse(body);
+
+                                    //logger.debug('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api returned : %s', reqId, body);
+
+                                    callback(apiResp.Exception, apiResp.Result);
+                                }
+                                else
+                                {
+                                    //logger.error('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api call failed', reqId, error);
+                                    callback(error, undefined);
+                                }
+                            });
+                        }
+                    });
+                }
+            })
+        }
+    })
+
+
+
+}
+
+function UnMuteAllUsers(confName,reqId,callback)
+{
+    GetConferenceID(confName,reqId,function(errConf,resConf)
+    {
+        if(errConf)
+        {
+            callback(errConf,undefined);
+        }
+        else
+        {
+            GetCallServerID(resConf,reqId,function(errCS,resCS)
+            {
+                if(errCS)
+                {
+                    callback(errCS,callback);
+                }
+                else
+                {
+                    GetCallserverIP(resCS,reqId,function(errIP,resIP)
+                    {
+                        if(errIP)
+                        {
+                            callback(errIP,undefined);
+                        }
+                        else
+                        {
+                            var httpUrl=resIP+':8080/api/conference?'+confName+" unmute ?all";
+                            var options = {
+                                url: httpUrl
+                            };
+
+                            httpReq(options, function (error, response, body)
+                            {
+                                if (!error && response.statusCode == 200)
+                                {
+                                    var apiResp = JSON.parse(body);
+
+                                    //logger.debug('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api returned : %s', reqId, body);
+
+                                    callback(apiResp.Exception, apiResp.Result);
+                                }
+                                else
+                                {
+                                    //logger.error('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api call failed', reqId, error);
+                                    callback(error, undefined);
+                                }
+                            });
+                        }
+                    });
+                }
+            })
+        }
+    })
+
+
+
+}
+
+function DeafUser(confName,User,reqId,callback)
+{
+    GetConferenceID(confName,reqId,function(errConf,resConf)
+    {
+        if(errConf)
+        {
+            callback(errConf,undefined);
+        }
+        else
+        {
+            GetCallServerID(resConf,reqId,function(errCS,resCS)
+            {
+                if(errCS)
+                {
+                    callback(errCS,callback);
+                }
+                else
+                {
+                    GetCallserverIP(resCS,reqId,function(errIP,resIP)
+                    {
+                        if(errIP)
+                        {
+                            callback(errIP,undefined);
+                        }
+                        else
+                        {
+                            var httpUrl=resIP+':8080/api/conference?'+confName+" deaf ?"+User;
+                            var options = {
+                                url: httpUrl
+                            };
+
+                            httpReq(options, function (error, response, body)
+                            {
+                                if (!error && response.statusCode == 200)
+                                {
+                                    var apiResp = JSON.parse(body);
+
+                                    //logger.debug('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api returned : %s', reqId, body);
+
+                                    callback(apiResp.Exception, apiResp.Result);
+                                }
+                                else
+                                {
+                                    //logger.error('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api call failed', reqId, error);
+                                    callback(error, undefined);
+                                }
+                            });
+                        }
+                    });
+                }
+            })
+        }
+    })
+
+
+
+}
+
+function UnDeafUser(confName,User,reqId,callback)
+{
+    GetConferenceID(confName,reqId,function(errConf,resConf)
+    {
+        if(errConf)
+        {
+            callback(errConf,undefined);
+        }
+        else
+        {
+            GetCallServerID(resConf,reqId,function(errCS,resCS)
+            {
+                if(errCS)
+                {
+                    callback(errCS,callback);
+                }
+                else
+                {
+                    GetCallserverIP(resCS,reqId,function(errIP,resIP)
+                    {
+                        if(errIP)
+                        {
+                            callback(errIP,undefined);
+                        }
+                        else
+                        {
+                            var httpUrl=resIP+':8080/api/conference?'+confName+" undeaf ?"+User;
+                            var options = {
+                                url: httpUrl
+                            };
+
+                            httpReq(options, function (error, response, body)
+                            {
+                                if (!error && response.statusCode == 200)
+                                {
+                                    var apiResp = JSON.parse(body);
+
+                                    //logger.debug('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api returned : %s', reqId, body);
+
+                                    callback(apiResp.Exception, apiResp.Result);
+                                }
+                                else
+                                {
+                                    //logger.error('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api call failed', reqId, error);
+                                    callback(error, undefined);
+                                }
+                            });
+                        }
+                    });
+                }
+            })
+        }
+    })
+
+
+
+}
+
+
+function DeafAllUsers(confName,reqId,callback)
+{
+    GetConferenceID(confName,reqId,function(errConf,resConf)
+    {
+        if(errConf)
+        {
+            callback(errConf,undefined);
+        }
+        else
+        {
+            GetCallServerID(resConf,reqId,function(errCS,resCS)
+            {
+                if(errCS)
+                {
+                    callback(errCS,callback);
+                }
+                else
+                {
+                    GetCallserverIP(resCS,reqId,function(errIP,resIP)
+                    {
+                        if(errIP)
+                        {
+                            callback(errIP,undefined);
+                        }
+                        else
+                        {
+                            var httpUrl=resIP+':8080/api/conference?'+confName+" deaf ?all";
+                            var options = {
+                                url: httpUrl
+                            };
+
+                            httpReq(options, function (error, response, body)
+                            {
+                                if (!error && response.statusCode == 200)
+                                {
+                                    var apiResp = JSON.parse(body);
+
+                                    //logger.debug('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api returned : %s', reqId, body);
+
+                                    callback(apiResp.Exception, apiResp.Result);
+                                }
+                                else
+                                {
+                                    //logger.error('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api call failed', reqId, error);
+                                    callback(error, undefined);
+                                }
+                            });
+                        }
+                    });
+                }
+            })
+        }
+    })
+
+
+
+}
+
+function UnDeafAllUsers(confName,reqId,callback)
+{
+    GetConferenceID(confName,reqId,function(errConf,resConf)
+    {
+        if(errConf)
+        {
+            callback(errConf,undefined);
+        }
+        else
+        {
+            GetCallServerID(resConf,reqId,function(errCS,resCS)
+            {
+                if(errCS)
+                {
+                    callback(errCS,callback);
+                }
+                else
+                {
+                    GetCallserverIP(resCS,reqId,function(errIP,resIP)
+                    {
+                        if(errIP)
+                        {
+                            callback(errIP,undefined);
+                        }
+                        else
+                        {
+                            var httpUrl=resIP+':8080/api/conference?'+confName+" undeaf ?all";
+                            var options = {
+                                url: httpUrl
+                            };
+
+                            httpReq(options, function (error, response, body)
+                            {
+                                if (!error && response.statusCode == 200)
+                                {
+                                    var apiResp = JSON.parse(body);
+
+                                    //logger.debug('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api returned : %s', reqId, body);
+
+                                    callback(apiResp.Exception, apiResp.Result);
+                                }
+                                else
+                                {
+                                    //logger.error('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api call failed', reqId, error);
+                                    callback(error, undefined);
+                                }
+                            });
+                        }
+                    });
+                }
+            })
+        }
+    })
+
+
+
+}
+
+
+function KickUser(confName,User,reqId,callback)
+{
+    GetConferenceID(confName,reqId,function(errConf,resConf)
+    {
+        if(errConf)
+        {
+            callback(errConf,undefined);
+        }
+        else
+        {
+            GetCallServerID(resConf,reqId,function(errCS,resCS)
+            {
+                if(errCS)
+                {
+                    callback(errCS,callback);
+                }
+                else
+                {
+                    GetCallserverIP(resCS,reqId,function(errIP,resIP)
+                    {
+                        if(errIP)
+                        {
+                            callback(errIP,undefined);
+                        }
+                        else
+                        {
+                            var httpUrl=resIP+':8080/api/conference?'+confName+" kick ?"+User;
+                            var options = {
+                                url: httpUrl
+                            };
+
+                            httpReq(options, function (error, response, body)
+                            {
+                                if (!error && response.statusCode == 200)
+                                {
+                                    var apiResp = JSON.parse(body);
+
+                                    //logger.debug('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api returned : %s', reqId, body);
+
+                                    callback(apiResp.Exception, apiResp.Result);
+                                }
+                                else
+                                {
+                                    //logger.error('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api call failed', reqId, error);
+                                    callback(error, undefined);
+                                }
+                            });
+                        }
+                    });
+                }
+            })
+        }
+    })
+
+
+
+}
+
+function LockRoom(confName,reqId,callback)
+{
+    GetConferenceID(confName,reqId,function(errConf,resConf)
+    {
+        if(errConf)
+        {
+            callback(errConf,undefined);
+        }
+        else
+        {
+            GetCallServerID(resConf,reqId,function(errCS,resCS)
+            {
+                if(errCS)
+                {
+                    callback(errCS,callback);
+                }
+                else
+                {
+                    GetCallserverIP(resCS,reqId,function(errIP,resIP)
+                    {
+                        if(errIP)
+                        {
+                            callback(errIP,undefined);
+                        }
+                        else
+                        {
+                            var httpUrl=resIP+':8080/api/conference?'+confName+" lock";
+                            var options = {
+                                url: httpUrl
+                            };
+
+                            httpReq(options, function (error, response, body)
+                            {
+                                if (!error && response.statusCode == 200)
+                                {
+                                    var apiResp = JSON.parse(body);
+
+                                    //logger.debug('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api returned : %s', reqId, body);
+
+                                    callback(apiResp.Exception, apiResp.Result);
+                                }
+                                else
+                                {
+                                    //logger.error('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api call failed', reqId, error);
+                                    callback(error, undefined);
+                                }
+                            });
+                        }
+                    });
+                }
+            })
+        }
+    })
+}
+
+function UnLockRoom(confName,reqId,callback)
+{
+    GetConferenceID(confName,reqId,function(errConf,resConf)
+    {
+        if(errConf)
+        {
+            callback(errConf,undefined);
+        }
+        else
+        {
+            GetCallServerID(resConf,reqId,function(errCS,resCS)
+            {
+                if(errCS)
+                {
+                    callback(errCS,callback);
+                }
+                else
+                {
+                    GetCallserverIP(resCS,reqId,function(errIP,resIP)
+                    {
+                        if(errIP)
+                        {
+                            callback(errIP,undefined);
+                        }
+                        else
+                        {
+                            var httpUrl=resIP+':8080/api/conference?'+confName+" unlock";
+                            var options = {
+                                url: httpUrl
+                            };
+
+                            httpReq(options, function (error, response, body)
+                            {
+                                if (!error && response.statusCode == 200)
+                                {
+                                    var apiResp = JSON.parse(body);
+
+                                    //logger.debug('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api returned : %s', reqId, body);
+
+                                    callback(apiResp.Exception, apiResp.Result);
+                                }
+                                else
+                                {
+                                    //logger.error('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api call failed', reqId, error);
+                                    callback(error, undefined);
+                                }
+                            });
+                        }
+                    });
+                }
+            })
+        }
+    })
+}
+
+
+function GetCallServerID(CSName,reqId,callback)
+{
+    client.HGET(CSName,'SwitchName',function(err,res)
+    {
+        callback(err,res);
+    });
+}
+
+function GetConferenceID(confName,reqId,callback)
+{
+
+    client.get(confName,function(errCID,resCID)
+    {
+        callback(errCID,resCID);
+    })
+
+}
+
+function GetCallserverIP(CSID,reqId,callback)
+{
+    DbConn.CallServer.find({where:[{id:CSID}]}).then(function(resIP)
+    {
+        callback(undefined,resIP);
+
+    }).catch(function(errIP)
+    {
+        callback(errIP,undefined);
+    });
+}
+
+function GetUserConference(User,reqId,callback)
+{
+    DbConn.ConferenceUser.find({include:[{model:DbConn.SipUACEndpoint,as : "SipUACEndpoint" ,where:[{SipUsername:User}]}]}).then(function(resUser)
+    {
+        callback(undefined,resUser.ConferenceId);
+    }).catch(function(errUser)
+    {
+        callback(errUser,undefined);
+    });
+}
+
 module.exports.AddConferenceUser = AddConferenceUser;
 module.exports.MapWithRoom = MapWithRoom;
 module.exports.DeleteUser = DeleteUser;
 module.exports.SetUserFlags = SetUserFlags;
 module.exports.GetUserDetails = GetUserDetails;
+
+
+module.exports.MuteUser = MuteUser;
+module.exports.UnMuteUser = UnMuteUser;
+module.exports.MuteAllUsers = MuteAllUsers;
+module.exports.UnMuteAllUsers = UnMuteAllUsers;
+module.exports.DeafUser = DeafUser;
+module.exports.UnDeafUser = UnDeafUser;
+module.exports.DeafAllUsers = DeafAllUsers;
+module.exports.UnDeafAllUsers = UnDeafAllUsers;
+module.exports.KickUser = KickUser;
+module.exports.LockRoom = LockRoom;
+module.exports.UnLockRoom = UnLockRoom;
+module.exports.GetUserConference = GetUserConference;
+
+
+
