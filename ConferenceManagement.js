@@ -1,9 +1,9 @@
 /**
  * Created by Pawan on 6/10/2015.
  */
-var DbConn = require('DVP-DBModels');
-var messageFormatter = require('DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
-var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
+var DbConn = require('dvp-dbmodels');
+var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
+var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var moment=require('moment');
 
 
