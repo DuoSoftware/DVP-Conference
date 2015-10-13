@@ -3,11 +3,11 @@
  */
 var httpReq = require('request');
 var util = require('util');
-var DbConn = require('DVP-DBModels');
+var DbConn = require('dvp-dbmodels');
 var redis=require('redis');
 var config=require('config');
-var messageFormatter = require('DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
-var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
+var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
+var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var moment=require('moment');
 
 var port = config.Redis.port || 3000;
