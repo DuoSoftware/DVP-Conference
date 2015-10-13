@@ -5,8 +5,8 @@
   "dependencies": {
     "config": "^1.14.0",
     "cors": "^2.7.1",
-    "DVP-Common": "DuoSoftware/DVP-Common",
-    "DVP-DBModels": "DuoSoftware/DVP-DBModels",
+    "dvp-common": "^0.0.2",
+    "dvp-dbmodels": "^0.0.19",
     "moment": "^2.10.3",
     "node-uuid": "^1.4.3",
     "restify": "^3.0.3",
