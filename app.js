@@ -2,14 +2,14 @@
  * Created by Pawan on 6/10/2015.
  */
 var restify = require('restify');
-var messageFormatter = require('DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
+var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 var config = require('config');
-var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
+var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var uuid = require('node-uuid');
 var cors = require('cors');
 var Room=require('./ConferenceManagement.js');
 var User=require('./ConferenceUserManagement.js');
-var DbConn = require('DVP-DBModels');
+var DbConn = require('dvp-dbmodels');
 var moment=require('moment');
 
 
