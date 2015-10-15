@@ -4,17 +4,16 @@
   "description": "",
   "main": "app.js",
   "dependencies": {
-    "dvp-common": "^0.0.0",
-    "node-uuid": "^1.4.3",
-    "restify": "^3.0.3",
-    "config": "^1.14.0",
-    "request": "^2.60.0",
-    "redis": "^0.12.1",
-    "stringify": "^3.1.0",
-    "util": "^0.10.3",
-    "dvp-dbmodels": "^0.0.0",
+    "config": "^1.16.0",
     "cors": "^2.7.1",
-    "moment": "^2.10.3"
+    "dvp-common": "^0.0.3",
+    "dvp-dbmodels": "^0.0.21",
+    "moment": "^2.10.6",
+    "node-uuid": "^1.4.3",
+    "redis": "^2.2.3",
+    "request": "^2.65.0",
+    "restify": "^4.0.3",
+    "util": "^0.10.3"
   },
   "devDependencies": {},
   "scripts": {
