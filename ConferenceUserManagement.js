@@ -319,8 +319,6 @@ function MuteUser(confName,User,reqId,callback)
                         }
                         else
                         {
-
-
                             var httpUrl=resIP+':8080/api/conference?'+confName+" mute ?"+User;
                             var options = {
                                 url: httpUrl
