@@ -11,69 +11,66 @@ function AddConferenceRoom(obj,Company,Tenant,reqId,callback){
 
     try
     {
-        DbConn.Extension.find({where:[{Extension:obj.Extension} ,{CompanyId:Company},{TenantId:Tenant}]}).complete(function(err,resExt)
-        {
-            if(err)
+        DbConn.Extension.find({where:[{Extension:obj.Extension} ,{CompanyId:Company},{TenantId:Tenant}]}).then(function (resExt) {
+
+            if(resExt)
             {
-                //logger.error('[DVP-Conference.NewConference] - [%s] - [PGSQL] - Error in searching Extension %s',reqId,JSON.stringify(obj),err);
-                callback(err,undefined);
-            }
-            else
-            {
-                if(resExt)
-                {
-                    //logger.debug('[DVP-Conference.NewConference] - [%s] - [PGSQL] - Found Extension %s',reqId,JSON.stringify(resExt));
+                //logger.debug('[DVP-Conference.NewConference] - [%s] - [PGSQL] - Found Extension %s',reqId,JSON.stringify(resExt));
 
-                    var ConfObj = DbConn.Conference
-                        .build(
-                        {
-                            ConferenceName : obj.ConferenceName,
-                            Description : obj.Description,
-                            CompanyId :  Company,
-                            TenantId: Tenant,
-                            ObjClass : "ConfClz",
-                            ObjType :"ConfTyp",
-                            ObjCategory:"ConfCat",
-                            Pin: obj.Pin,
-                            AllowAnonymousUser: obj.AllowAnonymousUser,
-                            StartTime :obj.StartTime,
-                            EndTime :obj.EndTime,
-                            Domain :obj.Domain,
-                            IsLocked :obj.IsLocked,
-                            MaxUser: obj.MaxUser
+                var ConfObj = DbConn.Conference
+                    .build(
+                    {
+                        ConferenceName : obj.ConferenceName,
+                        Description : obj.Description,
+                        CompanyId :  Company,
+                        TenantId: Tenant,
+                        ObjClass : "ConfClz",
+                        ObjType :"ConfTyp",
+                        ObjCategory:"ConfCat",
+                        Pin: obj.Pin,
+                        AllowAnonymousUser: obj.AllowAnonymousUser,
+                        StartTime :obj.StartTime,
+                        EndTime :obj.EndTime,
+                        Domain :obj.Domain,
+                        IsLocked :obj.IsLocked,
+                        MaxUser: obj.MaxUser
 
-                            // AddTime: new Date(2009, 10, 11),
-                            //  UpdateTime: new Date(2009, 10, 12),
-                            // CSDBCloudEndUserId: jobj.CSDBCloudEndUserId
+                        // AddTime: new Date(2009, 10, 11),
+                        //  UpdateTime: new Date(2009, 10, 12),
+                        // CSDBCloudEndUserId: jobj.CSDBCloudEndUserId
 
 
-                        }
-                    );
-                    ConfObj.save().complete(function (errSave) {
+                    }
+                );
+                ConfObj.save().then(function (resSave) {
 
-                        if(errSave)
-                        {
-                            callback(errSave,undefined);
-                        }
-                        else
-                        {
-                            ConfObj.setExtension(resExt).complete(function(errMap,ResMap)
-                            {
-                                callback(errMap,ResMap);
-                            });
-                        }
 
+                    ConfObj.setExtension(resExt).then(function (resMap) {
+
+                        callback(undefined,resMap);
+                    }).catch(function (errMap) {
+
+                        callback(errMap,undefined);
                     });
 
 
-                }
-                else
-                {
-                    //logger.error('[DVP-Conference.NewConference] - [%s] - [PGSQL] - Empty returns in searching Extension %s',reqId,JSON.stringify(obj),ex);
-                    callback(new Error("Empty returns for Extension"),undefined);
-                }
+
+                }).catch(function (errSave) {
+                    callback(errSave,undefined);
+                });
+
+
             }
+            else
+            {
+                //logger.error('[DVP-Conference.NewConference] - [%s] - [PGSQL] - Empty returns in searching Extension %s',reqId,JSON.stringify(obj),ex);
+                callback(new Error("Empty returns for Extension"),undefined);
+            }
+
+        }).catch(function (errExt) {
+            callback(errExt,undefined);
         });
+
     }
     catch(ex)
     {
@@ -99,74 +96,9 @@ function UpdateConference(CName,obj,reqId,callback)
             },
             ConferenceName:CName
         };
-        DbConn.Conference.findAll({where:conditionalData}).complete(function(errCnf,resCnf)
+        DbConn.Conference.findAll({where:conditionalData}).then(function(resCnf)
         {
-            if(errCnf)
-            {
-                callback(errCnf,undefined);
-            }
-            else
-            {
-                if(resCnf.length==0)
-                {
-                    DbConn.Conference.update(
-                        {
-                            Pin:obj.Pin,
-                            AllowAnonymousUser:obj.AllowAnonymousUser,
-                            Domain:obj.Domain,
-                            IsLocked:obj.IsLocked,
-                            MaxUser:obj.MaxUser
-
-                        },
-                        {
-                            where:[{ConferenceName:CName}]
-                        }
-
-                    ).then(function(resCUpdate){
-                            callback(undefined,resCUpdate);
-                        }).catch(function(errCUpdate)
-                        {
-                            callback(errCUpdate,undefined);
-                        });
-                }
-                else
-                {
-                    callback(new Error("Running Conference"),undefined);
-                }
-            }
-        });
-
-        /* CheckTimeValidity(CName,reqId,function(status)
-         {
-         if(status)
-         {
-         DbConn.Conference.destroy({where:[{ConferenceName:CName}]}).then(function(result)
-         {
-         callback(undefined,result);
-         }).error(function(err)
-         {
-         callback(err,undefined);
-         });
-         }
-         else
-         {
-         callback(new Error("Deletion Failed"),undefined);
-         }
-         });
-         */
-
-    }
-    catch(ex)
-    {
-        callback(ex,undefined);
-    }
-
-/*
-    try
-    {
-        CheckTimeValidity(CName,reqId,function(status)
-        {
-            if(status)
+            if(resCnf.length==0)
             {
                 DbConn.Conference.update(
                     {
@@ -183,23 +115,29 @@ function UpdateConference(CName,obj,reqId,callback)
 
                 ).then(function(resCUpdate){
                         callback(undefined,resCUpdate);
-                    }).error(function(errCUpdate)
+                    }).catch(function(errCUpdate)
                     {
                         callback(errCUpdate,undefined);
                     });
             }
             else
             {
-                callback(new Error("Updation Error"),undefined);
+                callback(new Error("Running Conference"),undefined);
             }
+
+        }).catch(function(errCnf)
+        {
+            callback(errCnf,undefined);
         });
+
 
     }
     catch(ex)
     {
         callback(ex,undefined);
     }
-    */
+
+
 }
 
 function DeleteConference(CName,reqId,callback)
@@ -219,46 +157,34 @@ function DeleteConference(CName,reqId,callback)
             },
             ConferenceName:CName
         };
-        DbConn.Conference.findAll({where:conditionalData}).complete(function(errCnf,resCnf)
-        {
-            if(errCnf)
+        DbConn.Conference.findAll({where:conditionalData}).then(function (resCnf) {
+
+            if(resCnf.length==0)
             {
-                callback(errCnf,undefined);
+                DbConn.Conference.destroy({where:[{ConferenceName:CName}]}).then(function (resDel) {
+
+                    callback(undefined,resDel);
+
+                }).catch(function (errDel) {
+                    callback(errDel,undefined);
+                });
+
+
             }
             else
             {
-                if(resCnf.length==0)
-                {
-                    DbConn.Conference.destroy({where:[{ConferenceName:CName}]}).complete(function(errDel,resDel)
-                    {
-                       callback(errDel,resDel);
-                    });
-                }
-                else
-                {
-                    callback(new Error("Running Conference"),undefined);
-                }
+                callback(new Error("Running Conference"),undefined);
             }
+
+        }).catch(function (errCnf) {
+            callback(errCnf,undefined);
         });
 
-       /* CheckTimeValidity(CName,reqId,function(status)
-        {
-            if(status)
-            {
-                DbConn.Conference.destroy({where:[{ConferenceName:CName}]}).then(function(result)
-                {
-                    callback(undefined,result);
-                }).error(function(err)
-                {
-                    callback(err,undefined);
-                });
-            }
-            else
-            {
-                callback(new Error("Deletion Failed"),undefined);
-            }
-        });
-        */
+
+
+
+
+
 
     }
     catch(ex)
@@ -285,73 +211,9 @@ function UpdateStartEndTimes(CName,obj,reqId,callback)
             },
             ConferenceName:CName
         };
-        DbConn.Conference.findAll({where:conditionalData}).complete(function(errCnf,resCnf)
-        {
-            if(errCnf)
-            {
-                callback(errCnf,undefined);
-            }
-            else
-            {
-                if(resCnf.length==0)
-                {
-                    DbConn.Conference.update(
-                        {
-                            StartTime:obj.StartTime,
-                            EndTime:obj.EndTime
+        DbConn.Conference.findAll({where:conditionalData}).then(function (resCnf) {
 
-
-                        },
-                        {
-                            where:[{ConferenceName:CName}]
-                        }
-
-                    ).then(function(resCUpdate){
-                            callback(undefined,resCUpdate);
-                        }).catch(function(errCUpdate)
-                        {
-                            callback(errCUpdate,undefined);
-                        });
-                }
-                else
-                {
-                    callback(new Error("Running Conference"),undefined);
-                }
-            }
-        });
-
-        /* CheckTimeValidity(CName,reqId,function(status)
-         {
-         if(status)
-         {
-         DbConn.Conference.destroy({where:[{ConferenceName:CName}]}).then(function(result)
-         {
-         callback(undefined,result);
-         }).error(function(err)
-         {
-         callback(err,undefined);
-         });
-         }
-         else
-         {
-         callback(new Error("Deletion Failed"),undefined);
-         }
-         });
-         */
-
-    }
-    catch(ex)
-    {
-        callback(ex,undefined);
-    }
-
-
-   /*
-    try
-    {
-        CheckTimeValidity(CName,reqId,function(status)
-        {
-            if(status)
+            if(resCnf.length==0)
             {
                 DbConn.Conference.update(
                     {
@@ -366,15 +228,18 @@ function UpdateStartEndTimes(CName,obj,reqId,callback)
 
                 ).then(function(resCUpdate){
                         callback(undefined,resCUpdate);
-                    }).error(function(errCUpdate)
+                    }).catch(function(errCUpdate)
                     {
                         callback(errCUpdate,undefined);
                     });
             }
             else
             {
-                callback(new Error("Updation Error"),undefined);
+                callback(new Error("Conference is already running"),undefined);
             }
+
+        }).catch(function (errCnf) {
+            callback(errCnf,undefined);
         });
 
 
@@ -383,18 +248,33 @@ function UpdateStartEndTimes(CName,obj,reqId,callback)
     {
         callback(ex,undefined);
     }
-    */
+
+
+
 }
 
 function GetConferenceRoomsOfCompany(CID,reqId,callback)
 {
     try
     {
-        DbConn.Conference.findAll({CompanyId:CID}).complete(function(errConf,resConf)
+        DbConn.Conference.findAll({CompanyId:CID}).then(function(resConf)
         {
-            callback(errConf,resConf);
+            if(resConf.length>0)
+            {
+callback(undefined,resConf);
+            }
+            else
+            {
+                callback(new Error("No conference room found"),undefined);
+            }
 
+
+        }).catch(function(errConf)
+        {
+            callback(errConf,undefined);
         });
+
+
     }
     catch(ex)
     {
@@ -407,10 +287,15 @@ function GetRoomDetails(CID,reqId,callback)
 
     try
     {
-        DbConn.Conference.findAll({where:[{ConferenceName:CID}],include:[{model:DbConn.ConferenceUser,as : "ConferenceUser"}]}).complete(function(err,res)
-        {
-            callback(err,res);
+        DbConn.Conference.findAll({where:[{ConferenceName:CID}],include:[{model:DbConn.ConferenceUser,as : "ConferenceUser"}]}).then(function (res) {
+
+            callback(undefined,res);
+
+        }).catch(function (err) {
+            callback(err,undefined);
         });
+
+
     }
     catch(ex)
     {
@@ -421,39 +306,46 @@ function GetRoomDetails(CID,reqId,callback)
 function MapWithCloudEndUser(CfName,CldId,reqId,callback)
 {
     try {
-        DbConn.Conference.find({where: [{ConferenceName: CfName},{CompanyId:'1'},{TenantId:'1'}]}).complete(function (errCf, resCf) {
-            if (errCf) {
-                callback(errCf,undefined);
+        DbConn.Conference.find({where: [{ConferenceName: CfName},{CompanyId:'1'},{TenantId:'1'}]}).then(function(resCf)
+        {
+            if (resCf != null) {
+                DbConn.CloudEndUser.find({where:[{id:CldId},{CompanyId:'1'},{TenantId:'1'}]}).then(function (resCld) {
+
+                    if(resCld!=null)
+                    {
+                        resCld.addConference(resCf).then(function (resMap) {
+
+                            callback(undefined,resMap);
+                        }).catch(function (errMap) {
+
+                            callback(errMap,undefined);
+                        });
+
+
+                    }
+                    else
+                    {
+                        callback(new Error("No cloud end user"),undefined);
+                    }
+
+                }).catch(function (errCld) {
+                    callback(errCld,undefined);
+                });
+
+
+
             }
             else {
-                if (resCf != null) {
-                    DbConn.CloudEndUser.find({where:[{id:CldId},{CompanyId:'1'},{TenantId:'1'}]}).complete(function (errCld,resCld) {
-                        if(errCld)
-                        {
-                            callback(errCld,undefined);
-                        }
-                        else
-                        {
-                            if(resCld!=null)
-                            {
-                                resCld.addConference(resCf).complete(function (errMap,resMap)
-                                {
-                                    callback(errMap,resMap);
-                                });
-                            }
-                            else
-                            {
-                                callback(new Error("No cloud end user"),undefined);
-                            }
-                        }
-
-                    });
-                }
-                else {
-                    callback(new Error("No conference"),undefined);
-                }
+                callback(new Error("No conference"),undefined);
             }
+        }).catch(function(errCf)
+        {
+            callback(errCf,undefined);
         });
+
+
+
+
     }
     catch(ex)
     {
@@ -465,35 +357,31 @@ function MapWithCloudEndUser(CfName,CldId,reqId,callback)
 
 function CheckTimeValidity(CName,reqId,callback)
 {
-    DbConn.Conference.find({where:[{ConferenceName:CName}]}).complete(function (errConf,resConf) {
+    DbConn.Conference.find({where:[{ConferenceName:CName}]}).then(function (resConf) {
 
-        if(errConf)
+        if(resConf!=null)
         {
-            console.log(errConf);
-            callback(false);
-        }
-        else
-        {
-            if(resConf!=null)
+            var x = moment(moment()).isBetween(resConf.StartTime, resConf.EndTime);
+            if(x)
             {
-                var x = moment(moment()).isBetween(resConf.StartTime, resConf.EndTime);
-                if(x)
-                {
-                    console.log(x);
-                    callback(false);
-                }
-                else
-                {
-                    callback(true);
-                }
+                console.log(x);
+                callback(false);
             }
             else
             {
-                console.log("Empty");
-                callback(false);
+                callback(true);
             }
         }
+        else
+        {
+            console.log("Empty");
+            callback(false);
+        }
+
+    }).catch(function (errConf) {
+        callback(false);
     });
+
 }
 
 
