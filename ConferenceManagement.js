@@ -35,9 +35,7 @@ function AddConferenceRoom(obj,Company,Tenant,reqId,callback){
                         IsLocked :obj.IsLocked,
                         MaxUser: obj.MaxUser
 
-                        // AddTime: new Date(2009, 10, 11),
-                        //  UpdateTime: new Date(2009, 10, 12),
-                        // CSDBCloudEndUserId: jobj.CSDBCloudEndUserId
+
 
 
                     }
@@ -63,7 +61,7 @@ function AddConferenceRoom(obj,Company,Tenant,reqId,callback){
             }
             else
             {
-                //logger.error('[DVP-Conference.NewConference] - [%s] - [PGSQL] - Empty returns in searching Extension %s',reqId,JSON.stringify(obj),ex);
+
                 callback(new Error("Empty returns for Extension"),undefined);
             }
 
@@ -289,7 +287,14 @@ function GetRoomDetails(CID,reqId,callback)
     {
         DbConn.Conference.findAll({where:[{ConferenceName:CID}],include:[{model:DbConn.ConferenceUser,as : "ConferenceUser"}]}).then(function (res) {
 
-            callback(undefined,res);
+            if(res.length>0)
+            {
+                callback(undefined,res);
+            } else
+            {
+                callback(new Error("No Conference room found"),undefined);
+            }
+
 
         }).catch(function (err) {
             callback(err,undefined);
