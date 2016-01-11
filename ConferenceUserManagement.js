@@ -1074,6 +1074,174 @@ function addUserToRoom(usrId,rmName,reqId,callback)
     }
 }
 
+function mapUserWithRoom(confName,confObj,reqId,callback)
+{
+    try
+    {
+        DbConn.Conference.find({where:[{ConferenceName:confName}]}).then(function (resRoom) {
+
+            if(resRoom)
+            {
+                try
+                {
+
+
+                    var CUserObj = DbConn.ConferenceUser
+                        .build(
+                        {
+                            ActiveTalker : confObj.ActiveTalker,
+                            Def : confObj.Def,
+                            Mute :  confObj.Mute,
+                            Mod: confObj.Mod,
+                            ObjClass : confObj.ObjClass,
+                            ObjType :confObj.ObjType,
+                            ObjCategory:confObj.ObjCategory,
+                            CurrentDef: confObj.CurrentDef,
+                            CurrentMute: confObj.CurrentMute,
+                            CurrentMod :confObj.CurrentMod,
+                            Destination :confObj.Destination,
+                            JoinType :confObj.JoinType,
+                            UserStatus:confObj.UserStatus
+
+
+
+                        }
+                    );
+                    CUserObj.save().then(function (resSave) {
+
+                        if(confObj.SipUACEndpointId)
+                        {
+                            DbConn.SipUACEndpoint.find({where:[{id:confObj.SipUACEndpoint}]}).then(function (resSip) {
+
+                                CUserObj.setSipUACEndpoint(resSip).then(function (resMap) {
+                                    //callback(undefined,resMap);
+                                    resRoom.addConferenceUser(resMap).then(function (resCuser) {
+                                        callback(undefined,resCuser);
+                                    }).catch(function (errCuser) {
+                                        callback(errCuser,undefined);
+                                    })
+                                }).catch(function (errMap) {
+                                    callback(errMap,undefined);
+                                });
+
+                            }).catch(function (errSip) {
+
+                            });
+                        }
+                        else
+                        {
+                            resRoom.addConferenceUser(CUserObj).then(function (resExtUser) {
+
+                                callback(undefined,resExtUser);
+                            }).catch(function (errExtUser) {
+                                callback(errExtUser,undefined);
+                            });
+                        }
+
+
+                        CUserObj.setSipUACEndpoint(resSip).then(function (resMap) {
+                            //callback(undefined,resMap);
+                            resRoom.addConferenceUser(resMap).then(function (resCuser) {
+                                callback(undefined,resCuser);
+                            }).catch(function (errRuser) {
+                                callback(errRuser,undefined);
+                            })
+                        }).catch(function (errMap) {
+                            callback(errMap,undefined);
+                        });
+
+
+                    }).catch(function (errSave) {
+                        callback(errSave,undefined);
+                    });
+
+
+
+
+                }
+                catch(ex)
+                {
+                    callback(ex,undefined);
+                }
+            }
+            else
+            {
+                callback(new Error("No conference Room"),undefined);
+            }
+
+        }).catch(function (errRoom) {
+            callback(errRoom,undefined);
+        });
+
+
+
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+}
+
+function updateUser(usrId,confObj,reqId,callback)
+{
+    try
+    {
+        DbConn.ConferenceUser.updateAttributes(
+            {
+                ActiveTalker : confObj.ActiveTalker,
+                Def : confObj.Def,
+                Mute :  confObj.Mute,
+                Mod: confObj.Mod,
+                ObjClass : confObj.ObjClass,
+                ObjType :confObj.ObjType,
+                ObjCategory:confObj.ObjCategory,
+                CurrentDef: confObj.CurrentDef,
+                CurrentMute: confObj.CurrentMute,
+                CurrentMod :confObj.CurrentMod,
+                Destination :confObj.Destination,
+                JoinType :confObj.JoinType,
+                UserStatus:confObj.UserStatus
+
+
+            },
+            {
+                where:[{id:usrId}]
+            }
+
+        ).then(function(resUsrUpdate){
+                callback(undefined,resUsrUpdate);
+            }).catch(function(errUsrUpdate)
+            {
+                callback(errUsrUpdate,undefined);
+
+            });
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+}
+
+function usersOfConference(confName,reqId,callback)
+{
+    try
+    {
+        DbConn.ConferenceUser.find({include:[{model: DbConn.Conference,  as: "Conference", where:[{ConferenceName:confName}]}]})
+
+            .then(function (resConfID) {
+
+                callback(undefined,resConfID);
+
+            }).catch(function (errConfID) {
+
+                callback(errConfID,undefined);
+            });
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+}
 
 
 
@@ -1100,6 +1268,9 @@ module.exports.GetUserConference = GetUserConference;
 
 
 module.exports.addUserToRoom = addUserToRoom;
+module.exports.mapUserWithRoom = mapUserWithRoom;
+module.exports.updateUser = updateUser;
+module.exports.usersOfConference = usersOfConference;
 
 
 

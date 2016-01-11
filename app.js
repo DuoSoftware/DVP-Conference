@@ -1272,3 +1272,160 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/U
 
     next();
 });
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+RestServer.post('/DVP/API/'+version+'/Conference/:confName/user',function(req,res,next)
+{
+    var reqId='';
+
+    try
+    {
+        reqId = uuid.v1();
+    }
+    catch(ex)
+    {
+
+    }
+
+
+    //log.info("\n.............................................Add appointment Starts....................................................\n");
+    try {
+        //log.info("Inputs : "+req.body);
+        //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Request received -  Data - %s ',reqId,JSON.stringify(req.body));
+        User.mapUserWithRoom(req.params.confName,req.body,reqId,function(err,resz)
+        {
+
+            if(err)
+            {
+                //log.error("Error in AddAppointment : "+err);
+
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+                res.end(jsonString);
+            }
+            else if(resz)
+            {
+                //log.info("Appointment saving Succeeded : "+resz);
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+                res.end(jsonString);
+            }
+
+        });
+
+    }
+    catch(ex)
+    {
+        //log.fatal("Exception found in AddAppointment : "+ex);
+        //logger.error('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Exception occurred when service started : NewAppointment -  Data - %s ',reqId,JSON.stringify(req.body),ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+        res.end(jsonString);
+    }
+    next();
+});
+
+RestServer.put('/DVP/API/'+version+'/ConferenceUser/:UserId',function(req,res,next)
+{
+    var reqId='';
+
+    try
+    {
+        reqId = uuid.v1();
+    }
+    catch(ex)
+    {
+
+    }
+
+
+    //log.info("\n.............................................Add appointment Starts....................................................\n");
+    try {
+        //log.info("Inputs : "+req.body);
+        //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Request received -  Data - %s ',reqId,JSON.stringify(req.body));
+        User.updateUser(req.params.UserId,req.body,reqId,function(err,resz)
+        {
+
+            if(err)
+            {
+                //log.error("Error in AddAppointment : "+err);
+
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+                res.end(jsonString);
+            }
+            else if(resz)
+            {
+                //log.info("Appointment saving Succeeded : "+resz);
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+                res.end(jsonString);
+            }
+
+        });
+
+    }
+    catch(ex)
+    {
+        //log.fatal("Exception found in AddAppointment : "+ex);
+        //logger.error('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Exception occurred when service started : NewAppointment -  Data - %s ',reqId,JSON.stringify(req.body),ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+        res.end(jsonString);
+    }
+    next();
+});
+
+
+RestServer.get('/DVP/API/'+version+'/Conference/:confName/users',function(req,res,next)
+{
+    var reqId='';
+
+    try
+    {
+        reqId = uuid.v1();
+    }
+    catch(ex)
+    {
+
+    }
+
+
+    //log.info("\n.............................................Add appointment Starts....................................................\n");
+    try {
+        //log.info("Inputs : "+req.body);
+        //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Request received -  Data - %s ',reqId,JSON.stringify(req.body));
+        User.usersOfConference(req.params.confName,req.body,reqId,function(err,resz)
+        {
+
+            if(err)
+            {
+                //log.error("Error in AddAppointment : "+err);
+
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+                res.end(jsonString);
+            }
+            else if(resz)
+            {
+                //log.info("Appointment saving Succeeded : "+resz);
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+                res.end(jsonString);
+            }
+
+        });
+
+    }
+    catch(ex)
+    {
+        //log.fatal("Exception found in AddAppointment : "+ex);
+        //logger.error('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Exception occurred when service started : NewAppointment -  Data - %s ',reqId,JSON.stringify(req.body),ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+        res.end(jsonString);
+    }
+    next();
+});
