@@ -129,6 +129,7 @@ function AddConferenceUser(obj,Company,Tenant,reqId,callback)
     }
 }
 
+
 function MapWithRoom(usrId,rmName,reqId,callback)
 {
     try
@@ -969,6 +970,113 @@ function GetUserConference(User,reqId,callback)
     });
 }
 
+/////////////////////////////////////////////////
+
+function addUserToRoom(usrId,rmName,reqId,callback)
+{
+    try
+    {
+        DbConn.Conference.find({where:[{ConferenceName:rmName}]}).then(function (resRoom) {
+
+            if(resRoom)
+            {
+                try
+                {
+                    DbConn.ConferenceUser.find({SipUACEndpointId:usrId}).then(function (resUser) {
+
+                        if(resUser)
+                        {
+                            resRoom.addConferenceUser(resUser).then(function (resMap) {
+
+                                callback(undefined,resMap);
+                            }).catch(function (errMap) {
+
+                                callback(errMap,undefined);
+                            });
+
+
+                        }
+                        else
+                        {
+                            //callback(new Error("No conference User"),undefined);
+
+                            DbConn.SipUACEndpoint.find({id:usrId}).then(function (resSip) {
+
+                                var CUserObj = DbConn.ConferenceUser
+                                    .build(
+                                    {
+                                        ActiveTalker : false,
+                                        Def : false,
+                                        Mute :  false,
+                                        Mod: false,
+                                        ObjClass : "ConfClz",
+                                        ObjType :"TYP",
+                                        ObjCategory:"INTERNAL",
+                                        CurrentDef: false,
+                                        CurrentMute: false,
+                                        CurrentMod :false,
+                                        Destination :"",
+                                        JoinType :""
+
+
+
+                                    }
+                                );
+                                CUserObj.save().then(function (resSave) {
+
+                                    CUserObj.setSipUACEndpoint(resSip).then(function (resMap) {
+                                        //callback(undefined,resMap);
+                                        resRoom.addConferenceUser(resMap).then(function (resCuser) {
+                                            callback(undefined,resCuser);
+                                        }).catch(function (errRuser) {
+                                            callback(errRuser,undefined);
+                                        })
+                                    }).catch(function (errMap) {
+                                        callback(errMap,undefined);
+                                    });
+
+
+                                }).catch(function (errSave) {
+                                    callback(errSave,undefined);
+                                });
+
+                            }).catch(function (errSip) {
+
+                            });
+
+                        }
+                    }).catch(function (errUser) {
+                        callback(errUser,undefined);
+                    });
+
+
+                }
+                catch(ex)
+                {
+                    callback(ex,undefined);
+                }
+            }
+            else
+            {
+                callback(new Error("No conference Room"),undefined);
+            }
+
+        }).catch(function (errRoom) {
+            callback(errRoom,undefined);
+        });
+
+
+
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+}
+
+
+
+
 module.exports.AddConferenceUser = AddConferenceUser;
 module.exports.MapWithRoom = MapWithRoom;
 module.exports.DeleteUser = DeleteUser;
@@ -988,6 +1096,12 @@ module.exports.KickUser = KickUser;
 module.exports.LockRoom = LockRoom;
 module.exports.UnLockRoom = UnLockRoom;
 module.exports.GetUserConference = GetUserConference;
+
+
+
+module.exports.addUserToRoom = addUserToRoom;
+
+
 
 
 
