@@ -499,9 +499,6 @@ RestServer.del('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:Use
     next();
 });
 
-
-
-
 RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRooms',function(req,res,next)
 {
     var reqId='';
@@ -662,11 +659,6 @@ RestServer.get('/test',function(err,res,next)
         console.log("R "+r);
     });
 });
-
-
-
-//Sprint 4
-
 
 RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/Mute',function(req,res,next)
 {
