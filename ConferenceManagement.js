@@ -86,11 +86,11 @@ function UpdateConference(CName,obj,reqId,callback)
         console.log(xx);
         var conditionalData = {
             StartTime: {
-                lt: [xx]
+                lt: xx
             },
             EndTime:
             {
-                gt:[xx]
+                gt: xx
             },
             ConferenceName:CName
         };
@@ -104,7 +104,9 @@ function UpdateConference(CName,obj,reqId,callback)
                         AllowAnonymousUser:obj.AllowAnonymousUser,
                         Domain:obj.Domain,
                         IsLocked:obj.IsLocked,
-                        MaxUser:obj.MaxUser
+                        MaxUser:obj.MaxUser,
+                        StartTime: obj.StartTime,
+                        EndTime: obj.EndTime
 
                     },
                     {
@@ -147,11 +149,11 @@ function DeleteConference(CName,reqId,callback)
         console.log(xx);
         var conditionalData = {
             StartTime: {
-                lt: [xx]
+                lt: xx
             },
             EndTime:
             {
-                gt:[xx]
+                gt:xx
             },
             ConferenceName:CName
         };
@@ -285,9 +287,9 @@ function GetRoomDetails(CID,reqId,callback)
 
     try
     {
-        DbConn.Conference.findAll({where:[{ConferenceName:CID}],include:[{model:DbConn.ConferenceUser,as : "ConferenceUser"}]}).then(function (res) {
+        DbConn.Conference.find({where:[{ConferenceName:CID}],include:[{model:DbConn.ConferenceUser,as : "ConferenceUser"}]}).then(function (res) {
 
-            if(res.length>0)
+            if(res)
             {
                 callback(undefined,res);
             } else
@@ -357,8 +359,6 @@ function MapWithCloudEndUser(CfName,CldId,reqId,callback)
         callback(ex,undefined);
     }
 }
-
-
 
 function CheckTimeValidity(CName,reqId,callback)
 {
