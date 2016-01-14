@@ -38,6 +38,7 @@ RestServer.use(restify.bodyParser());
 RestServer.use(restify.acceptParser(RestServer.acceptable));
 RestServer.use(restify.queryParser());
 
+
 RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom',function(req,res,next)
 {
     var reqId='';
@@ -90,7 +91,7 @@ var Company=1;
      next();
 });
 
-RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:ConfName',function(req,res,next)
+RestServer.put('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:ConfName',function(req,res,next)
 {
     var reqId='';
 
@@ -294,7 +295,6 @@ RestServer.del('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:Con
     next();
 });
 
-
 RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser',function(req,res,next)
 {
     var reqId='';
@@ -347,7 +347,6 @@ var Company= 1;
     next();
 });
 
-
 RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:UserId/AssignToRoom/:RoomName',function(req,res,next)
 {
     var reqId='';
@@ -399,8 +398,6 @@ RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:Us
     next();
 });
 
-
-
 RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:UserId/AddToRoom/:RoomName',function(req,res,next)
 {
     var reqId='';
@@ -451,7 +448,6 @@ RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:Us
     }
     next();
 });
-
 
 RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:UserId/Mode',function(req,res,next)
 {
@@ -554,9 +550,6 @@ RestServer.del('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:Use
     }
     next();
 });
-
-
-
 
 RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRooms',function(req,res,next)
 {
@@ -708,7 +701,6 @@ RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:Use
     next();
 });
 
-
 RestServer.get('/test',function(err,res,next)
 {
 
@@ -718,11 +710,6 @@ RestServer.get('/test',function(err,res,next)
         console.log("R "+r);
     });
 });
-
-
-
-//Sprint 4
-
 
 RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/Mute',function(req,res,next)
 {
