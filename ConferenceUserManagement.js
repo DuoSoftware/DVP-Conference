@@ -1137,18 +1137,7 @@ function mapUserWithRoom(confName,confObj,reqId,callback)
                                 callback(errExtUser,undefined);
                             });
                         }
-
-
-                        CUserObj.setSipUACEndpoint(resSip).then(function (resMap) {
-                            //callback(undefined,resMap);
-                            resRoom.addConferenceUser(resMap).then(function (resCuser) {
-                                callback(undefined,resCuser);
-                            }).catch(function (errRuser) {
-                                callback(errRuser,undefined);
-                            })
-                        }).catch(function (errMap) {
-                            callback(errMap,undefined);
-                        });
+                        
 
 
                     }).catch(function (errSave) {
