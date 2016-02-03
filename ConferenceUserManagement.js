@@ -1137,14 +1137,12 @@ function mapUserWithRoom(confName,confObj,reqId,callback)
                                 callback(errExtUser,undefined);
                             });
                         }
-                        
+
 
 
                     }).catch(function (errSave) {
                         callback(errSave,undefined);
                     });
-
-
 
 
                 }
