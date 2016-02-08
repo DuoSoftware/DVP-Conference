@@ -6,8 +6,8 @@
   "dependencies": {
     "config": "^1.16.0",
     "cors": "^2.7.1",
-    "dvp-common": "^0.0.3",
-    "dvp-dbmodels": "^0.0.21",
+    "dvp-common": "^0.0.16",
+    "dvp-dbmodels": "^0.0.37",
     "moment": "^2.10.6",
     "node-uuid": "^1.4.3",
     "redis": "^2.2.3",
