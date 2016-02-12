@@ -963,7 +963,23 @@ function GetUserConference(User,reqId,callback)
 {
     DbConn.ConferenceUser.find({include:[{model:DbConn.SipUACEndpoint,as : "SipUACEndpoint" ,where:[{SipUsername:User}]}]}).then(function(resUser)
     {
-        callback(undefined,resUser.ConferenceId);
+        if(resUser)
+        {
+            callback(undefined,resUser.ConferenceId);
+        }
+        else
+        {
+            DbConn.ConferenceUser.find({where:[{Destination:User}]}).then(function (resExternalUser) {
+
+                callback(undefined,resExternalUser.ConferenceId);
+
+            }).catch(function (errExternalUser) {
+
+                callback(errExternalUser,undefined);
+            });
+        }
+        console.log(JSON.stringify(resUser));
+
     }).catch(function(errUser)
     {
         callback(errUser,undefined);
