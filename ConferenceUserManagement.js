@@ -130,11 +130,11 @@ function AddConferenceUser(obj,Company,Tenant,reqId,callback)
 }
 
 
-function MapWithRoom(usrId,rmName,reqId,callback)
+function MapWithRoom(usrId,rmName,Company,Tenant,reqId,callback)
 {
     try
     {
-        DbConn.Conference.find({where:[{ConferenceName:rmName}]}).then(function (resRoom) {
+        DbConn.Conference.find({where:[{ConferenceName:rmName},{CompanyId:Company},{TenantId:Tenant}]}).then(function (resRoom) {
 
             if(resRoom)
             {
@@ -187,7 +187,7 @@ function MapWithRoom(usrId,rmName,reqId,callback)
     }
 }
 
-function DeleteUser(usrId,reqId,callback)
+function DeleteUser(usrId,Company,Tenant,reqId,callback)
 {
     try
     {
@@ -959,9 +959,9 @@ function GetCallserverIP(CSID,reqId,callback)
     });
 }
 
-function GetUserConference(User,reqId,callback)
+function GetUserConference(User,Company,Tenant,reqId,callback)
 {
-    DbConn.ConferenceUser.find({include:[{model:DbConn.SipUACEndpoint,as : "SipUACEndpoint" ,where:[{SipUsername:User}]}]}).then(function(resUser)
+    DbConn.ConferenceUser.find({include:[{model:DbConn.SipUACEndpoint,as : "SipUACEndpoint" ,where:[{SipUsername:User},{CompanyId:Company},{TenantId:Tenant}]}]}).then(function(resUser)
     {
         if(resUser)
         {
@@ -988,11 +988,11 @@ function GetUserConference(User,reqId,callback)
 
 /////////////////////////////////////////////////
 
-function addUserToRoom(usrId,rmName,reqId,callback)
+function addUserToRoom(usrId,rmName,Company,Tenant,reqId,callback)
 {
     try
     {
-        DbConn.Conference.find({where:[{ConferenceName:rmName}]}).then(function (resRoom) {
+        DbConn.Conference.find({where:[{ConferenceName:rmName},{CompanyId:Company},{TenantId:Tenant}]}).then(function (resRoom) {
 
             if(resRoom)
             {
@@ -1090,11 +1090,11 @@ function addUserToRoom(usrId,rmName,reqId,callback)
     }
 }
 
-function mapUserWithRoom(confName,confObj,reqId,callback)
+function mapUserWithRoom(confName,confObj,Company,Tenant,reqId,callback)
 {
     try
     {
-        DbConn.Conference.find({where:[{ConferenceName:confName}]}).then(function (resRoom) {
+        DbConn.Conference.find({where:[{ConferenceName:confName},{CompanyId:Company},{TenantId:Tenant}]}).then(function (resRoom) {
 
             if(resRoom)
             {
@@ -1225,11 +1225,11 @@ function updateUser(usrId,confObj,reqId,callback)
     }
 }
 
-function usersOfConference(confName,reqId,callback)
+function usersOfConference(confName,Company,Tenant,reqId,callback)
 {
     try
     {
-        DbConn.ConferenceUser.find({include:[{model: DbConn.Conference,  as: "Conference", where:[{ConferenceName:confName}]}]})
+        DbConn.ConferenceUser.find({include:[{model: DbConn.Conference,  as: "Conference", where:[{ConferenceName:confName},{CompanyId:Company},{TenantId:Tenant}]}]})
 
             .then(function (resConfID) {
 

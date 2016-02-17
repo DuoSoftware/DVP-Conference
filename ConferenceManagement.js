@@ -77,7 +77,7 @@ function AddConferenceRoom(obj,Company,Tenant,reqId,callback){
     }
 }
 
-function UpdateConference(CName,obj,reqId,callback)
+function UpdateConference(CName,obj,Company,Tenant,reqId,callback)
 {
     try
     {
@@ -92,11 +92,15 @@ function UpdateConference(CName,obj,reqId,callback)
             {
                 gt: xx
             },
-            ConferenceName:CName
+            ConferenceName:CName,
+            CompanyId :  Company,
+            TenantId: Tenant
+
+
         };
-        DbConn.Conference.findAll({where:conditionalData}).then(function(resCnf)
+        DbConn.Conference.find({where:conditionalData}).then(function(resCnf)
         {
-            if(resCnf.length==0)
+            if(!resCnf)
             {
                 DbConn.Conference.update(
                     {
@@ -193,7 +197,7 @@ function DeleteConference(CName,reqId,callback)
     }
 }
 
-function UpdateStartEndTimes(CName,obj,reqId,callback)
+function UpdateStartEndTimes(CName,obj,Company,Tenant,reqId,callback)
 {
 
     try
@@ -209,11 +213,13 @@ function UpdateStartEndTimes(CName,obj,reqId,callback)
             {
                 gt:[xx]
             },
-            ConferenceName:CName
+            ConferenceName:CName,
+            CompanyId :  Company,
+            TenantId: Tenant
         };
-        DbConn.Conference.findAll({where:conditionalData}).then(function (resCnf) {
+        DbConn.Conference.find({where:conditionalData}).then(function (resCnf) {
 
-            if(resCnf.length==0)
+            if(!resCnf)
             {
                 DbConn.Conference.update(
                     {
@@ -253,15 +259,15 @@ function UpdateStartEndTimes(CName,obj,reqId,callback)
 
 }
 
-function GetConferenceRoomsOfCompany(CID,reqId,callback)
+function GetConferenceRoomsOfCompany(Company,Tenant,reqId,callback)
 {
     try
     {
-        DbConn.Conference.findAll({CompanyId:CID}).then(function(resConf)
+        DbConn.Conference.findAll([{CompanyId:Company},{TenantId:Tenant}]).then(function(resConf)
         {
             if(resConf.length>0)
             {
-callback(undefined,resConf);
+                callback(undefined,resConf);
             }
             else
             {
@@ -282,12 +288,12 @@ callback(undefined,resConf);
     }
 }
 
-function GetRoomDetails(CID,reqId,callback)
+function GetRoomDetails(CID,Company,Tenant,reqId,callback)
 {
 
     try
     {
-        DbConn.Conference.find({where:[{ConferenceName:CID}],include:[{model:DbConn.ConferenceUser,as : "ConferenceUser"}]}).then(function (res) {
+        DbConn.Conference.find({where:[{ConferenceName:CID},{CompanyId:Company},{TenantId:Tenant}],include:[{model:DbConn.ConferenceUser,as : "ConferenceUser"}]}).then(function (res) {
 
             if(res)
             {
@@ -310,13 +316,13 @@ function GetRoomDetails(CID,reqId,callback)
     }
 }
 
-function MapWithCloudEndUser(CfName,CldId,reqId,callback)
+function MapWithCloudEndUser(CfName,CldId,Company,Tenant,reqId,callback)
 {
     try {
-        DbConn.Conference.find({where: [{ConferenceName: CfName},{CompanyId:'1'},{TenantId:'1'}]}).then(function(resCf)
+        DbConn.Conference.find({where: [{ConferenceName: CfName},{CompanyId:Company},{TenantId:Tenant}]}).then(function(resCf)
         {
             if (resCf != null) {
-                DbConn.CloudEndUser.find({where:[{id:CldId},{CompanyId:'1'},{TenantId:'1'}]}).then(function (resCld) {
+                DbConn.CloudEndUser.find({where:[{id:CldId},{CompanyId:Company},{TenantId:Tenant}]}).then(function (resCld) {
 
                     if(resCld!=null)
                     {

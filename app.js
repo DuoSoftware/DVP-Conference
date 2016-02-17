@@ -11,6 +11,9 @@ var Room=require('./ConferenceManagement.js');
 var User=require('./ConferenceUserManagement.js');
 var DbConn = require('dvp-dbmodels');
 var moment=require('moment');
+var jwt = require('restify-jwt');
+var secret = require('dvp-common/Authentication/Secret.js');
+var authorization = require('dvp-common/Authentication/Authorization.js');
 
 
 var port = config.Host.port || 3000;
@@ -25,9 +28,11 @@ var RestServer = restify.createServer({
 {
 
 });
+RestServer.pre(restify.pre.userAgentConnection());
 restify.CORS.ALLOW_HEADERS.push('authorization');
 RestServer.use(restify.CORS());
 RestServer.use(restify.fullResponse());
+RestServer.use(jwt({secret: secret.Secret}));
 //Server listen
 RestServer.listen(port, function () {
     console.log('%s listening at %s', RestServer.name, RestServer.url);
@@ -51,29 +56,31 @@ RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom',fu
     {
 
     }
-var Company=1;
-    var Tenant=1;
 
-    //log.info("\n.............................................Add appointment Starts....................................................\n");
+    if(!req.user.company || !req.user.tenant)
+    {
+        var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"),"ERROR/EXCEPTION", false, undefined);
+        res.end(jsonString);
+    }
+    var Company=req.user.company;
+    var Tenant=req.user.tenant;
+
+
     try {
-        //log.info("Inputs : "+req.body);
-        //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Request received -  Data - %s ',reqId,JSON.stringify(req.body));
+
         Room.AddConferenceRoom(req.body,Company,Tenant,reqId,function(err,resz)
         {
 
             if(err)
             {
-                //log.error("Error in AddAppointment : "+err);
+
 
                 var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
-                //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
                 res.end(jsonString);
             }
-            else if(resz)
+            else
             {
-                //log.info("Appointment saving Succeeded : "+resz);
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
-                //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
                 res.end(jsonString);
             }
 
@@ -82,13 +89,11 @@ var Company=1;
     }
     catch(ex)
     {
-        //log.fatal("Exception found in AddAppointment : "+ex);
-        //logger.error('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Exception occurred when service started : NewAppointment -  Data - %s ',reqId,JSON.stringify(req.body),ex);
+
         var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
-        //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
         res.end(jsonString);
     }
-     next();
+    next();
 });
 
 RestServer.put('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:ConfName',function(req,res,next)
@@ -107,22 +112,25 @@ RestServer.put('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:Con
 
     //log.info("\n.............................................Add appointment Starts....................................................\n");
     try {
-        //log.info("Inputs : "+req.body);
-        //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Request received -  Data - %s ',reqId,JSON.stringify(req.body));
-        Room.UpdateConference(req.params.ConfName,req.body,reqId,function(err,resz)
+
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
+            res.end(jsonString);
+        }
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+        Room.UpdateConference(req.params.ConfName,req.body,Company,Tenant,reqId,function(err,resz)
         {
 
             if(err)
             {
-                //log.error("Error in AddAppointment : "+err);
-
                 var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
-                //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
                 res.end(jsonString);
             }
-            else if(resz)
+            else
             {
-                //log.info("Appointment saving Succeeded : "+resz);
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
                 //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
                 res.end(jsonString);
@@ -160,7 +168,17 @@ RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:Co
     try {
         //log.info("Inputs : "+req.body);
         //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Request received -  Data - %s ',reqId,JSON.stringify(req.body));
-        Room.UpdateStartEndTimes(req.params.ConfName,req.body,reqId,function(err,resz)
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
+            //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+            res.end(jsonString);
+        }
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+
+        Room.UpdateStartEndTimes(req.params.ConfName,req.body,Company,Tenant,reqId,function(err,resz)
         {
 
             if(err)
@@ -171,7 +189,7 @@ RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:Co
                 //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
                 res.end(jsonString);
             }
-            else if(resz)
+            else
             {
                 //log.info("Appointment saving Succeeded : "+resz);
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
@@ -211,7 +229,17 @@ RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:Cf
     try {
         //log.info("Inputs : "+req.body);
         //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Request received -  Data - %s ',reqId,JSON.stringify(req.body));
-        Room.MapWithCloudEndUser(req.params.CfName,parseInt(req.params.CloudUserId),reqId,function(err,resz)
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
+            //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+            res.end(jsonString);
+        }
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+
+        Room.MapWithCloudEndUser(req.params.CfName,parseInt(req.params.CloudUserId),Company,Tenant,reqId,function(err,resz)
         {
 
             if(err)
@@ -222,7 +250,7 @@ RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:Cf
                 //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
                 res.end(jsonString);
             }
-            else if(resz)
+            else
             {
                 //log.info("Appointment saving Succeeded : "+resz);
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
@@ -262,7 +290,18 @@ RestServer.del('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:Con
     try {
         //log.info("Inputs : "+req.body);
         //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Request received -  Data - %s ',reqId,JSON.stringify(req.body));
-        Room.DeleteConference(req.params.ConfName,reqId,function(err,resz)
+
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
+            //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+            res.end(jsonString);
+        }
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+
+        Room.DeleteConference(req.params.ConfName,Company,Tenant,reqId,function(err,resz)
         {
 
             if(err)
@@ -273,7 +312,7 @@ RestServer.del('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:Con
                 //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
                 res.end(jsonString);
             }
-            else if(resz)
+            else
             {
                 //log.info("Appointment saving Succeeded : "+resz);
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
@@ -307,13 +346,23 @@ RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser',fu
     {
 
     }
-var Company= 1;
-    var Tenant=1;
+
 
     //log.info("\n.............................................Add appointment Starts....................................................\n");
     try {
         //log.info("Inputs : "+req.body);
         //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Request received -  Data - %s ',reqId,JSON.stringify(req.body));
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
+            //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+            res.end(jsonString);
+        }
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+
+
         User.AddConferenceUser(req.body,Company,Tenant,reqId,function(err,resz)
         {
 
@@ -325,7 +374,7 @@ var Company= 1;
                 //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
                 res.end(jsonString);
             }
-            else if(resz)
+            else
             {
                 //log.info("Appointment saving Succeeded : "+resz);
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
@@ -365,7 +414,18 @@ RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:Us
     try {
         //log.info("Inputs : "+req.body);
         //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Request received -  Data - %s ',reqId,JSON.stringify(req.body));
-        User.MapWithRoom(req.params.UserId,req.params.RoomName,reqId,function(err,resz)
+
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
+            //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+            res.end(jsonString);
+        }
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+
+        User.MapWithRoom(req.params.UserId,req.params.RoomName,Company,Tenant,reqId,function(err,resz)
         {
 
             if(err)
@@ -376,7 +436,7 @@ RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:Us
                 //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
                 res.end(jsonString);
             }
-            else if(resz)
+            else
             {
                 //log.info("Appointment saving Succeeded : "+resz);
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
@@ -416,7 +476,18 @@ RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:Us
     try {
         //log.info("Inputs : "+req.body);
         //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Request received -  Data - %s ',reqId,JSON.stringify(req.body));
-        User.addUserToRoom(req.params.UserId,req.params.RoomName,reqId,function(err,resz)
+
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
+            //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+            res.end(jsonString);
+        }
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+
+        User.addUserToRoom(req.params.UserId,req.params.RoomName,Company,Tenant,reqId,function(err,resz)
         {
 
             if(err)
@@ -427,7 +498,7 @@ RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:Us
                 //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
                 res.end(jsonString);
             }
-            else if(resz)
+            else
             {
                 //log.info("Appointment saving Succeeded : "+resz);
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
@@ -467,6 +538,18 @@ RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:Us
     try {
         //log.info("Inputs : "+req.body);
         //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Request received -  Data - %s ',reqId,JSON.stringify(req.body));
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
+            //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+            res.end(jsonString);
+        }
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+
+
+
         User.SetUserFlags(req.params.UserId,req.body,reqId,function(err,resz)
         {
 
@@ -478,7 +561,7 @@ RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:Us
                 //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
                 res.end(jsonString);
             }
-            else if(resz)
+            else
             {
                 //log.info("Appointment saving Succeeded : "+resz);
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
@@ -518,7 +601,17 @@ RestServer.del('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:Use
     try {
         //log.info("Inputs : "+req.body);
         //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Request received -  Data - %s ',reqId,JSON.stringify(req.body));
-        User.DeleteUser(parseInt(req.params.UserId),reqId,function(err,resz)
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
+            //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+            res.end(jsonString);
+        }
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+
+        User.DeleteUser(parseInt(req.params.UserId),Company,Tenant,reqId,function(err,resz)
         {
 
             if(err)
@@ -529,7 +622,7 @@ RestServer.del('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:Use
                 //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
                 res.end(jsonString);
             }
-            else if(resz)
+            else
             {
                 //log.info("Appointment saving Succeeded : "+resz);
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
@@ -563,14 +656,24 @@ RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRooms',fu
     {
 
     }
-var Company=1;
-    var Tenant=1;
+
 
     //log.info("\n.............................................Add appointment Starts....................................................\n");
     try {
         //log.info("Inputs : "+req.body);
         //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Request received -  Data - %s ',reqId,JSON.stringify(req.body));
-        Room.GetConferenceRoomsOfCompany(Company,reqId,function(err,resz)
+
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
+            //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+            res.end(jsonString);
+        }
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+
+        Room.GetConferenceRoomsOfCompany(Company,Tenant,reqId,function(err,resz)
         {
 
             if(err)
@@ -581,7 +684,7 @@ var Company=1;
                 //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
                 res.end(jsonString);
             }
-            else if(resz)
+            else
             {
                 //log.info("Appointment saving Succeeded : "+resz);
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
@@ -620,7 +723,19 @@ RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:Con
 
     try {
 
-        Room.GetRoomDetails(req.params.ConfName,reqId,function(err,resz)
+
+        if(!req.user.company || !req.user.tenant)
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
+
+            res.end(jsonString);
+        }
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+
+
+        Room.GetRoomDetails(req.params.ConfName,Company,Tenant,reqId,function(err,resz)
         {
 
             if(err)
@@ -631,7 +746,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:Con
 
                 res.end(jsonString);
             }
-            else if(resz)
+            else
             {
 
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
@@ -669,6 +784,16 @@ RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:Use
 
     try {
 
+        if(!req.user.company || !req.user.tenant)
+        {
+
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
+            res.end(jsonString);
+        }
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+
         User.GetUserDetails(parseInt(req.params.UserId),reqId,function(err,resz)
         {
 
@@ -680,7 +805,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:Use
 
                 res.end(jsonString);
             }
-            else if(resz)
+            else
             {
 
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
@@ -724,52 +849,69 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/M
 
     }
 
-    User.GetUserConference(req.params.User,reqId,function(errConf,resConf)
+    try
     {
-        if(errConf)
+        if(!req.user.company || !req.user.tenant)
         {
-            var jsonString = messageFormatter.FormatMessage(errConf, "ERROR/EXCEPTION", false, undefined);
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
 
             res.end(jsonString);
         }
-        else
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+
+
+        User.GetUserConference(req.params.User,Company,Tenant,reqId,function(errConf,resConf)
         {
-            try {
-
-                User.MuteUser(resConf,req.params.User,reqId,function(err,resz)
-                {
-
-                    if(err)
-                    {
-
-
-                        var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
-
-                        res.end(jsonString);
-                    }
-                    else if(resz)
-                    {
-
-                        var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
-
-                        res.end(jsonString);
-                    }
-
-                });
-
-            }
-            catch(ex)
+            if(errConf)
             {
-
-                var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+                var jsonString = messageFormatter.FormatMessage(errConf, "ERROR/EXCEPTION", false, undefined);
 
                 res.end(jsonString);
             }
-        }
-    });
+            else
+            {
+                try {
+
+                    User.MuteUser(resConf,req.params.User,reqId,function(err,resz)
+                    {
+
+                        if(err)
+                        {
 
 
+                            var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
 
+                            res.end(jsonString);
+                        }
+                        else if(resz)
+                        {
+
+                            var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+
+                            res.end(jsonString);
+                        }
+
+                    });
+
+                }
+                catch(ex)
+                {
+
+                    var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+
+                    res.end(jsonString);
+                }
+            }
+        });
+
+    }
+    catch(ex)
+    {
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        res.end(jsonString);
+    }
 
 
     next();
@@ -788,48 +930,59 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/U
 
     }
 
-    User.GetUserConference(req.params.User,reqId,function(errConf,resConf)
-    {
-        if(errConf)
-        {
-            var jsonString = messageFormatter.FormatMessage(errConf, "ERROR/EXCEPTION", false, undefined);
+
+    try {
+        if (!req.user.company || !req.user.tenant) {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
 
             res.end(jsonString);
         }
-        else
-        {
-            try {
 
-                User.UnMuteUser(resConf,req.params.User,reqId,function(err,resz)
-                {
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
 
-                    if(err)
-                    {
 
-                        var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
-
-                        res.end(jsonString);
-                    }
-                    else if(resz)
-                    {
-
-                        var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
-
-                        res.end(jsonString);
-                    }
-
-                });
-
-            }
-            catch(ex)
-            {
-
-                var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        User.GetUserConference(req.params.User, Company, Tenant, reqId, function (errConf, resConf) {
+            if (errConf) {
+                var jsonString = messageFormatter.FormatMessage(errConf, "ERROR/EXCEPTION", false, undefined);
 
                 res.end(jsonString);
             }
-        }
-    });
+            else {
+                try {
+
+                    User.UnMuteUser(resConf, req.params.User, reqId, function (err, resz) {
+
+                        if (err) {
+
+                            var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+
+                            res.end(jsonString);
+                        }
+                        else if (resz) {
+
+                            var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+
+                            res.end(jsonString);
+                        }
+
+                    });
+
+                }
+                catch (ex) {
+
+                    var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+
+                    res.end(jsonString);
+                }
+            }
+        });
+    }
+    catch (e)
+    {
+        var jsonString = messageFormatter.FormatMessage(e, "EXCEPTION", false, undefined);
+        res.end(jsonString);
+    }
 
 
 
@@ -850,41 +1003,49 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/D
 
     }
 
-    User.GetUserConference(req.params.User,reqId,function(errConf,resConf)
-    {
-        if(errConf)
-        {
-            var jsonString = messageFormatter.FormatMessage(errConf, "ERROR/EXCEPTION", false, undefined);
+    try {
+        if (!req.user.company || !req.user.tenant) {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
             res.end(jsonString);
         }
-        else
-        {
-            try {
-                User.DeafUser(resConf,req.params.User,reqId,function(err,resz)
-                {
 
-                    if(err)
-                    {
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
 
-                        var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
-                        res.end(jsonString);
-                    }
-                    else if(resz)
-                    {
-                        var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
-                        res.end(jsonString);
-                    }
-
-                });
-
-            }
-            catch(ex)
-            {
-                var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        User.GetUserConference(req.params.User, Company, Tenant, reqId, function (errConf, resConf) {
+            if (errConf) {
+                var jsonString = messageFormatter.FormatMessage(errConf, "ERROR/EXCEPTION", false, undefined);
                 res.end(jsonString);
             }
-        }
-    });
+            else {
+                try {
+                    User.DeafUser(resConf, req.params.User, reqId, function (err, resz) {
+
+                        if (err) {
+
+                            var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                            res.end(jsonString);
+                        }
+                        else if (resz) {
+                            var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                            res.end(jsonString);
+                        }
+
+                    });
+
+                }
+                catch (ex) {
+                    var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+                    res.end(jsonString);
+                }
+            }
+        });
+    }
+    catch (ex)
+    {
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        res.end(jsonString);
+    }
 
 
     next();
@@ -903,41 +1064,47 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/U
 
     }
 
-    User.GetUserConference(req.params.User,reqId,function(errConf,resConf)
-    {
-        if(errConf)
-        {
-            var jsonString = messageFormatter.FormatMessage(errConf, "ERROR/EXCEPTION", false, undefined);
+    try {
+        if (!req.user.company || !req.user.tenant) {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
             res.end(jsonString);
         }
-        else
-        {
-            try {
-                User.UnDeafUser(resConf,req.params.User,reqId,function(err,resz)
-                {
 
-                    if(err)
-                    {
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
 
-                        var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
-                        res.end(jsonString);
-                    }
-                    else if(resz)
-                    {
-                        var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
-                        res.end(jsonString);
-                    }
-
-                });
-
-            }
-            catch(ex)
-            {
-                var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        User.GetUserConference(req.params.User, Company, Tenant, reqId, function (errConf, resConf) {
+            if (errConf) {
+                var jsonString = messageFormatter.FormatMessage(errConf, "ERROR/EXCEPTION", false, undefined);
                 res.end(jsonString);
             }
-        }
-    });
+            else {
+                try {
+                    User.UnDeafUser(resConf, req.params.User, reqId, function (err, resz) {
+
+                        if (err) {
+
+                            var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                            res.end(jsonString);
+                        }
+                        else if (resz) {
+                            var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                            res.end(jsonString);
+                        }
+
+                    });
+
+                }
+                catch (ex) {
+                    var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+                    res.end(jsonString);
+                }
+            }
+        });
+    } catch (ex) {
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        res.end(jsonString);
+    }
 
     next();
 });
@@ -955,41 +1122,47 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/K
 
     }
 
-    User.GetUserConference(req.params.User,reqId,function(errConf,resConf)
-    {
-        if(errConf)
-        {
-            var jsonString = messageFormatter.FormatMessage(errConf, "ERROR/EXCEPTION", false, undefined);
+    try {
+        if (!req.user.company || !req.user.tenant) {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
             res.end(jsonString);
         }
-        else
-        {
-            try {
-                User.KickUser(resConf,req.params.User,reqId,function(err,resz)
-                {
 
-                    if(err)
-                    {
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
 
-                        var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
-                        res.end(jsonString);
-                    }
-                    else if(resz)
-                    {
-                        var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
-                        res.end(jsonString);
-                    }
-
-                });
-
-            }
-            catch(ex)
-            {
-                var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        User.GetUserConference(req.params.User,Company,Tenant, reqId, function (errConf, resConf) {
+            if (errConf) {
+                var jsonString = messageFormatter.FormatMessage(errConf, "ERROR/EXCEPTION", false, undefined);
                 res.end(jsonString);
             }
-        }
-    });
+            else {
+                try {
+                    User.KickUser(resConf, req.params.User, reqId, function (err, resz) {
+
+                        if (err) {
+
+                            var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                            res.end(jsonString);
+                        }
+                        else if (resz) {
+                            var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                            res.end(jsonString);
+                        }
+
+                    });
+
+                }
+                catch (ex) {
+                    var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+                    res.end(jsonString);
+                }
+            }
+        });
+    } catch (ex) {
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        res.end(jsonString);
+    }
 
     next();
 });
@@ -1008,29 +1181,37 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/U
     }
 
 
-            try {
-                User.MuteAllUsers(req.params.ConfName,reqId,function(err,resz)
-                {
+    try {
+        if (!req.user.company || !req.user.tenant) {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
+            res.end(jsonString);
+        }
 
-                    if(err)
-                    {
-                        var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
-                        res.end(jsonString);
-                    }
-                    else if(resz)
-                    {
-                        var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
-                        res.end(jsonString);
-                    }
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
 
-                });
+        User.MuteAllUsers(req.params.ConfName,Company,Tenant,reqId,function(err,resz)
+        {
 
-            }
-            catch(ex)
+            if(err)
             {
-                var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
                 res.end(jsonString);
             }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                res.end(jsonString);
+            }
+
+        });
+
+    }
+    catch(ex)
+    {
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        res.end(jsonString);
+    }
 
 
     next();
@@ -1051,7 +1232,16 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/U
 
 
     try {
-        User.UnMuteAllUsers(req.params.ConfName,reqId,function(err,resz)
+
+        if (!req.user.company || !req.user.tenant) {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
+            res.end(jsonString);
+        }
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+
+        User.UnMuteAllUsers(req.params.ConfName,Company,Tenant,reqId,function(err,resz)
         {
 
             if(err)
@@ -1060,7 +1250,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/U
                 var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
                 res.end(jsonString);
             }
-            else if(resz)
+            else
             {
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
                 res.end(jsonString);
@@ -1097,7 +1287,17 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/U
 
 
     try {
-        User.DeafAllUsers(req.params.ConfName,reqId,function(err,resz)
+
+        if (!req.user.company || !req.user.tenant) {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
+            res.end(jsonString);
+        }
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+
+
+        User.DeafAllUsers(req.params.ConfName,Company,Tenant,reqId,function(err,resz)
         {
 
             if(err)
@@ -1106,7 +1306,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/U
                 var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
                 res.end(jsonString);
             }
-            else if(resz)
+            else
             {
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
                 res.end(jsonString);
@@ -1141,7 +1341,15 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/U
 
     try {
 
-        User.UnDeafAllUsers(req.params.ConfName,reqId,function(err,resz)
+        if (!req.user.company || !req.user.tenant) {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
+            res.end(jsonString);
+        }
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+
+        User.UnDeafAllUsers(req.params.ConfName,Company,Tenant,reqId,function(err,resz)
         {
 
             if(err)
@@ -1150,7 +1358,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/U
                 var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
                 res.end(jsonString);
             }
-            else if(resz)
+            else
             {
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
                 res.end(jsonString);
@@ -1185,8 +1393,15 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/L
 
 
     try {
+        if (!req.user.company || !req.user.tenant) {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
+            res.end(jsonString);
+        }
 
-        User.LockRoom(req.params.ConfName,reqId,function(err,resz)
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+
+        User.LockRoom(req.params.ConfName,Company,Tenant,reqId,function(err,resz)
         {
 
             if(err)
@@ -1195,7 +1410,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/L
                 var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
                 res.end(jsonString);
             }
-            else if(resz)
+            else
             {
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
                 res.end(jsonString);
@@ -1231,7 +1446,15 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/U
 
     try {
 
-        User.UnLockRoom(req.params.ConfName,reqId,function(err,resz)
+        if (!req.user.company || !req.user.tenant) {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
+            res.end(jsonString);
+        }
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+
+        User.UnLockRoom(req.params.ConfName,Company,Tenant,reqId,function(err,resz)
         {
 
             if(err)
@@ -1241,7 +1464,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/U
                 var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
                 res.end(jsonString);
             }
-            else if(resz)
+            else
             {
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
                 res.end(jsonString);
@@ -1281,7 +1504,16 @@ RestServer.post('/DVP/API/'+version+'/Conference/:confName/user',function(req,re
     try {
         //log.info("Inputs : "+req.body);
         //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Request received -  Data - %s ',reqId,JSON.stringify(req.body));
-        User.mapUserWithRoom(req.params.confName,req.body,reqId,function(err,resz)
+
+        if (!req.user.company || !req.user.tenant) {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
+            res.end(jsonString);
+        }
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+
+        User.mapUserWithRoom(req.params.confName,req.body,Company,Tenant,reqId,function(err,resz)
         {
 
             if(err)
@@ -1292,7 +1524,7 @@ RestServer.post('/DVP/API/'+version+'/Conference/:confName/user',function(req,re
                 //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
                 res.end(jsonString);
             }
-            else if(resz)
+            else
             {
                 //log.info("Appointment saving Succeeded : "+resz);
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
@@ -1332,6 +1564,11 @@ RestServer.put('/DVP/API/'+version+'/ConferenceUser/:UserId',function(req,res,ne
     try {
         //log.info("Inputs : "+req.body);
         //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Request received -  Data - %s ',reqId,JSON.stringify(req.body));
+        if (!req.user.company || !req.user.tenant) {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
+            res.end(jsonString);
+        }
+
         User.updateUser(req.params.UserId,req.body,reqId,function(err,resz)
         {
 
@@ -1343,7 +1580,7 @@ RestServer.put('/DVP/API/'+version+'/ConferenceUser/:UserId',function(req,res,ne
                 //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
                 res.end(jsonString);
             }
-            else if(resz)
+            else
             {
                 //log.info("Appointment saving Succeeded : "+resz);
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
@@ -1384,7 +1621,16 @@ RestServer.get('/DVP/API/'+version+'/Conference/:confName/users',function(req,re
     try {
         //log.info("Inputs : "+req.body);
         //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Request received -  Data - %s ',reqId,JSON.stringify(req.body));
-        User.usersOfConference(req.params.confName,req.body,reqId,function(err,resz)
+
+        if (!req.user.company || !req.user.tenant) {
+            var jsonString = messageFormatter.FormatMessage(new Error("Invalid authorization details found"), "ERROR/EXCEPTION", false, undefined);
+            res.end(jsonString);
+        }
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+
+        User.usersOfConference(req.params.confName,req.body,Company,Tenant,reqId,function(err,resz)
         {
 
             if(err)
@@ -1395,7 +1641,7 @@ RestServer.get('/DVP/API/'+version+'/Conference/:confName/users',function(req,re
                 //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
                 res.end(jsonString);
             }
-            else if(resz)
+            else
             {
                 //log.info("Appointment saving Succeeded : "+resz);
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
