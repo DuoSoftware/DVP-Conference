@@ -44,7 +44,7 @@ RestServer.use(restify.acceptParser(RestServer.acceptable));
 RestServer.use(restify.queryParser());
 
 
-RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom',function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
@@ -96,7 +96,7 @@ RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom',fu
     next();
 });
 
-RestServer.put('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:ConfName',function(req,res,next)
+RestServer.put('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:ConfName',authorization({resource:"conference", action:"write"}),function(req,res,next)
 {
     var reqId='';
 
@@ -150,7 +150,7 @@ RestServer.put('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:Con
     next();
 });
 
-RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:ConfName/Time',function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:ConfName/Time',authorization({resource:"conference", action:"write"}),function(req,res,next)
 {
     var reqId='';
 
@@ -211,7 +211,7 @@ RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:Co
     next();
 });
 
-RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:CfName/AssignCloudEndUser/:CloudUserId',function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:CfName/AssignCloudEndUser/:CloudUserId',authorization({resource:"conference", action:"write"}),function(req,res,next)
 {
     var reqId='';
 
@@ -272,7 +272,7 @@ RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:Cf
     next();
 });
 
-RestServer.del('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:ConfName',function(req,res,next)
+RestServer.del('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:ConfName',authorization({resource:"conference", action:"write"}),function(req,res,next)
 {
     var reqId='';
 
@@ -334,7 +334,7 @@ RestServer.del('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:Con
     next();
 });
 
-RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser',function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser',authorization({resource:"conference", action:"write"}),function(req,res,next)
 {
     var reqId='';
 
@@ -396,7 +396,7 @@ RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser',fu
     next();
 });
 
-RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:UserId/AssignToRoom/:RoomName',function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:UserId/AssignToRoom/:RoomName',authorization({resource:"conference", action:"write"}),function(req,res,next)
 {
     var reqId='';
 
@@ -458,7 +458,7 @@ RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:Us
     next();
 });
 
-RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:UserId/AddToRoom/:RoomName',function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:UserId/AddToRoom/:RoomName',authorization({resource:"conference", action:"write"}),function(req,res,next)
 {
     var reqId='';
 
@@ -520,7 +520,7 @@ RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:Us
     next();
 });
 
-RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:UserId/Mode',function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:UserId/Mode',authorization({resource:"conference", action:"write"}),function(req,res,next)
 {
     var reqId='';
 
@@ -583,7 +583,7 @@ RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:Us
     next();
 });
 
-RestServer.del('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:UserId',function(req,res,next)
+RestServer.del('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:UserId',authorization({resource:"conference", action:"write"}),function(req,res,next)
 {
     var reqId='';
 
@@ -644,7 +644,7 @@ RestServer.del('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:Use
     next();
 });
 
-RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRooms',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRooms',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
@@ -706,7 +706,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRooms',fu
     next();
 });
 
-RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:ConfName',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:ConfName',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
@@ -767,7 +767,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:Con
     next();
 });
 
-RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:UserId',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:UserId',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
@@ -836,7 +836,7 @@ RestServer.get('/test',function(err,res,next)
     });
 });
 
-RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/Mute',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/Mute',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
@@ -917,7 +917,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/M
     next();
 });
 
-RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/UnMute',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/UnMute',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
@@ -990,7 +990,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/U
     next();
 });
 
-RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/Deaf',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/Deaf',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
@@ -1051,7 +1051,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/D
     next();
 });
 
-RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/UnDeaf',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/UnDeaf',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
@@ -1109,7 +1109,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/U
     next();
 });
 
-RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/Kick',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/Kick',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
@@ -1167,7 +1167,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/K
     next();
 });
 
-RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/Users/Mute',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/Users/Mute',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
@@ -1217,7 +1217,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/U
     next();
 });
 
-RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/Users/UnMute',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/Users/UnMute',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
@@ -1272,7 +1272,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/U
     next();
 });
 
-RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/Users/Deaf',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/Users/Deaf',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
@@ -1325,7 +1325,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/U
     next();
 });
 
-RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/Users/UnDeaf',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/Users/UnDeaf',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
@@ -1378,7 +1378,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/U
     next();
 });
 
-RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/Lock',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/Lock',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
@@ -1430,7 +1430,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/L
     next();
 });
 
-RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/Unlock',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/Unlock',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
@@ -1486,7 +1486,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/Conference/:ConfName/U
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-RestServer.post('/DVP/API/'+version+'/Conference/:confName/user',function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/Conference/:confName/user',authorization({resource:"conference", action:"write"}),function(req,res,next)
 {
     var reqId='';
 
@@ -1546,7 +1546,7 @@ RestServer.post('/DVP/API/'+version+'/Conference/:confName/user',function(req,re
     next();
 });
 
-RestServer.put('/DVP/API/'+version+'/ConferenceUser/:UserId',function(req,res,next)
+RestServer.put('/DVP/API/'+version+'/ConferenceUser/:UserId',authorization({resource:"conference", action:"write"}),function(req,res,next)
 {
     var reqId='';
 
@@ -1603,7 +1603,7 @@ RestServer.put('/DVP/API/'+version+'/ConferenceUser/:UserId',function(req,res,ne
 });
 
 
-RestServer.get('/DVP/API/'+version+'/Conference/:confName/users',function(req,res,next)
+RestServer.get('/DVP/API/'+version+'/Conference/:confName/users',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
