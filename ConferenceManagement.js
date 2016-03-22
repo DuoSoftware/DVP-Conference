@@ -221,7 +221,7 @@ function UpdateStartEndTimes(CName,obj,Company,Tenant,reqId,callback)
 
             if(!resCnf)
             {
-                DbConn.Conference.update(
+                DbConn.Conference.updateAttributes(
                     {
                         StartTime:obj.StartTime,
                         EndTime:obj.EndTime
