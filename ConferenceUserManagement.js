@@ -28,7 +28,7 @@ function AddConferenceUser(obj,Company,Tenant,reqId,callback)
     {
         try
         {
-            DbConn.SipUACEndpoint.find({where:[{SipUserUuid:obj.SipUserUuid},{CompanyId:Company},{TenantId:Tenant}]}).then(function (resSip) {
+            DbConn.SipUACEndpoint.find({where:[{SipUserUuid:obj.SipUserUuid},{CompanyId:Company},{TenantId:Tenant}],include:[{model:DbConn.Extension,as : "Extension"}]}).then(function (resSip) {
 
                 if(resSip)
                 {
@@ -45,7 +45,7 @@ function AddConferenceUser(obj,Company,Tenant,reqId,callback)
                             CurrentDef: obj.CurrentDef,
                             CurrentMute: obj.CurrentMute,
                             CurrentMod :obj.CurrentMod,
-                            Destination :obj.Destination,
+                            Destination :resSip.Extension.Extension,
                             JoinType :obj.JoinType
 
                             // AddTime: new Date(2009, 10, 11),

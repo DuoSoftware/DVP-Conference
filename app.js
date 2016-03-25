@@ -57,7 +57,7 @@ RestServer.post('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom',au
 
     }
 
-
+    console.log(req.body.Extension);
 
 
     try {
