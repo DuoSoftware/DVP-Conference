@@ -6,7 +6,7 @@
   "dependencies": {
     "config": "^1.16.0",
     "cors": "^2.7.1",
-    "dvp-common": "^0.0.16",
+    "dvp-common": "^0.1.1",
     "dvp-dbmodels": "^0.0.37",
     "moment": "^2.10.6",
     "node-uuid": "^1.4.3",
