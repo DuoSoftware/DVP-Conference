@@ -9,8 +9,6 @@ var uuid = require('node-uuid');
 var cors = require('cors');
 var Room=require('./ConferenceManagement.js');
 var User=require('./ConferenceUserManagement.js');
-var DbConn = require('dvp-dbmodels');
-var moment=require('moment');
 var jwt = require('restify-jwt');
 var secret = require('dvp-common/Authentication/Secret.js');
 var authorization = require('dvp-common/Authentication/Authorization.js');
@@ -18,7 +16,6 @@ var authorization = require('dvp-common/Authentication/Authorization.js');
 
 var port = config.Host.port || 3000;
 var version=config.Host.version;
-var hpath=config.Host.hostpath;
 
 
 var RestServer = restify.createServer({

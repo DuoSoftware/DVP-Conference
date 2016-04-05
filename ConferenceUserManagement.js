@@ -12,12 +12,18 @@ var moment=require('moment');
 
 var port = config.Redis.port || 3000;
 var ip = config.Redis.ip;
+var password = config.Redis.password;
+
 
 
 var client = redis.createClient(port,ip);
-client.on("error", function (err) {
-    console.log("Error " + err);
+
+client.auth(password, function (error) {
+    console.log("Redis Auth Error : "+error);
 });
+/*client.on("error", function (err) {
+
+});*/
 
 
 function AddConferenceUser(obj,Company,Tenant,reqId,callback)
