@@ -8,6 +8,7 @@
 #EXPOSE 8821
 
 FROM node:argon
+RUN npm install npm -g
 RUN git clone git://github.com/DuoSoftware/DVP-Conference.git /usr/local/src/conference
 RUN cd /usr/local/src/conference;
 WORKDIR /usr/local/src/conference
