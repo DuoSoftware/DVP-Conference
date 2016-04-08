@@ -21,6 +21,11 @@ var client = redis.createClient(port,ip);
 client.auth(password, function (error) {
     console.log("Redis Auth Error : "+error);
 });
+client.on("error", function (err) {
+    console.log("Error " + err);
+
+
+});
 /*client.on("error", function (err) {
 
 });*/
@@ -937,10 +942,13 @@ function UnLockRoom(confName,reqId,callback)
 
 function GetCallServerID(CSName,reqId,callback)
 {
-    client.HGET(CSName,'SwitchName',function(err,res)
-    {
-        callback(err,res);
-    });
+
+        client.HGET(CSName,'SwitchName',function(err,res)
+        {
+            callback(err,res);
+        });
+   
+
 }
 
 function GetConferenceID(confName,reqId,undefined)
