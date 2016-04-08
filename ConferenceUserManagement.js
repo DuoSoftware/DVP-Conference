@@ -947,7 +947,6 @@ function GetCallServerID(CSName,reqId,callback)
         {
             callback(err,res);
         });
-   
 
 }
 
