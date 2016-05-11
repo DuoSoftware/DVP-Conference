@@ -1586,7 +1586,7 @@ RestServer.get('/DVP/API/'+version+'/Conference/:confName/users',authorization({
         var Company = req.user.company;
         var Tenant = req.user.tenant;
 
-        User.usersOfConference(req.params.confName,req.body,Company,Tenant,reqId,function(err,resz)
+        User.usersOfConference(req.params.confName,Company,Tenant,reqId,function(err,resz)
         {
 
             if(err)
