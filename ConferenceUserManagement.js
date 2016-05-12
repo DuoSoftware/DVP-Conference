@@ -28,7 +28,7 @@ client.on("error", function (err) {
 });
 /*client.on("error", function (err) {
 
-});*/
+ });*/
 
 
 function AddConferenceUser(obj,Company,Tenant,reqId,callback)
@@ -943,10 +943,10 @@ function UnLockRoom(confName,reqId,callback)
 function GetCallServerID(CSName,reqId,callback)
 {
 
-        client.HGET(CSName,'SwitchName',function(err,res)
-        {
-            callback(err,res);
-        });
+    client.HGET(CSName,'SwitchName',function(err,res)
+    {
+        callback(err,res);
+    });
 
 }
 
@@ -1242,7 +1242,7 @@ function usersOfConference(confName,Company,Tenant,reqId,callback)
 {
     try
     {
-        DbConn.ConferenceUser.find({include:[{model: DbConn.Conference,  as: "Conference", where:[{ConferenceName:confName},{CompanyId:Company},{TenantId:Tenant}]}]})
+        DbConn.ConferenceUser.findAll({include:[{model: DbConn.Conference,  as: "Conference", where:[{ConferenceName:confName},{CompanyId:Company},{TenantId:Tenant}]}]})
 
             .then(function (resConfID) {
 
