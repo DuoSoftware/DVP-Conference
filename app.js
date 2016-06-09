@@ -798,15 +798,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:Use
     next();
 });
 
-RestServer.get('/test',function(err,res,next)
-{
 
-    User.GetUsersConference('+94721389808',1,function(e,r)
-    {
-        console.log("E "+e);
-        console.log("R "+r);
-    });
-});
 
 RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/Mute',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
@@ -1618,6 +1610,176 @@ RestServer.get('/DVP/API/'+version+'/Conference/:confName/users',authorization({
     }
     next();
 });
+
+
+
+
+
+
+
+////////////////////////////////// Conference Template API's //////////////////////////////////////
+
+
+RestServer.get('/DVP/API/:version/ConferenceConfiguration/Templates/Group/:groupId', authorization({resource:"conference", action:"read"}), function(req, res, next)
+{
+    var reqId = uuid.v1();
+    try
+    {
+        var grpId = req.params.groupId;
+
+        logger.debug('[DVP-Conference.GetTemplatesByGroup] - [%s] - HTTP Request Received - Params : GroupId : %s', reqId, grpId);
+
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
+
+
+        if(grpId)
+        {
+            Room.GetTemplatesByGroup(reqId, grpId, function(err, templates)
+            {
+                if(err)
+                {
+                    var jsonString = messageFormatter.FormatMessage(err, "Get templates by group failed", false, false);
+                    logger.debug('[DVP-Conference.GetTemplatesByGroup] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                    res.end(jsonString);
+                }
+                else
+                {
+                    var jsonString = messageFormatter.FormatMessage(null, "Get templates by group success", true, templates);
+                    logger.debug('[DVP-Conference.GetTemplatesByGroup] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                    res.end(jsonString);
+                }
+
+            })
+        }
+        else
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error('Group Id not supplied'), "Group Id not supplied", false, false);
+            logger.debug('[DVP-Conference.GetTemplatesByGroup] - [%s] - API RESPONSE : %s', reqId, jsonString);
+            res.end(jsonString);
+        }
+
+
+    }
+    catch(ex)
+    {
+        var jsonString = messageFormatter.FormatMessage(ex, "Exception occurred", false, false);
+        logger.debug('[DVP-Conference.GetTemplatesByGroup] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonString);
+
+    }
+    return next();
+
+});
+
+RestServer.get('/DVP/API/:version/ConferenceConfiguration/Templates', authorization({resource:"conference", action:"read"}), function(req, res, next)
+{
+    var reqId = uuid.v1();
+    try
+    {
+        logger.debug('[DVP-Conference.GetTemplates] - [%s] - HTTP Request Received', reqId);
+
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
+
+        Room.GetTemplates(reqId, function(err, templates)
+        {
+            if(err)
+            {
+                var jsonString = messageFormatter.FormatMessage(err, "Get templates failed", false, false);
+                logger.debug('[DVP-Conference.GetTemplatesByGroup] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(null, "Get templates success", true, templates);
+                logger.debug('[DVP-Conference.GetTemplatesByGroup] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+
+        })
+
+    }
+    catch(ex)
+    {
+        var jsonString = messageFormatter.FormatMessage(ex, "Exception occurred", false, false);
+        logger.debug('[DVP-Conference.GetTemplatesByGroup] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonString);
+
+    }
+    return next();
+
+});
+
+RestServer.post('/DVP/API/:version/ConferenceConfiguration/Conference/:confName/ActiveTemplate/:templateName', authorization({resource:"conference", action:"write"}), function(req, res, next)
+{
+    var reqId = uuid.v1();
+    try
+    {
+        var confName = req.params.confName;
+        var template = req.params.templateName;
+
+        logger.debug('[DVP-Conference.SetActiveTemplate] - [%s] - HTTP Request Received - Params : ConfName : %s, ActiveTemplate : %s', reqId, confName, template);
+
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
+
+
+        if(confName && template)
+        {
+            Room.AssignTemplateToConferenceDB(reqId, confName, template, companyId, tenantId, function(err, assignResult)
+            {
+                if(err)
+                {
+                    var jsonString = messageFormatter.FormatMessage(err, "Assign Template To Conference Failed", false, false);
+                    logger.debug('[DVP-Conference.SetActiveTemplate] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                    res.end(jsonString);
+                }
+                else
+                {
+                    var jsonString = messageFormatter.FormatMessage(err, "Assign Template To Conference Success", true, assignResult);
+                    logger.debug('[DVP-Conference.SetActiveTemplate] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                    res.end(jsonString);
+                }
+
+            })
+        }
+        else
+        {
+            var jsonString = messageFormatter.FormatMessage(new Error('Conference room name or template id not supplied'), "Conference room name or template id not supplied", false, false);
+            logger.debug('[DVP-Conference.SetActiveTemplate] - [%s] - API RESPONSE : %s', reqId, jsonString);
+            res.end(jsonString);
+        }
+
+
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-Conference.SetActiveTemplate] - [%s] - Exception Occurred', reqId, ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "Exception occurred", false, false);
+        logger.debug('[DVP-Conference.SetActiveTemplate] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonString);
+
+    }
+    return next();
+
+});
+
 
 function Crossdomain(req,res,next){
 

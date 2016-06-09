@@ -395,6 +395,100 @@ function CheckTimeValidity(CName,reqId,callback)
 
 }
 
+var AssignTemplateToConferenceDB = function(reqId, conferenceName, templateName, companyId, tenantId, callback)
+{
+    try
+    {
+        DbConn.Conference.find({where: [{ConferenceName: conferenceName},{CompanyId: companyId},{TenantId: tenantId}]})
+            .then(function (conf)
+            {
+                if(conf)
+                {
+
+                    DbConn.ConferenceTemplate.find({where: [{TemplateName: templateName}]})
+                        .then(function (template)
+                        {
+                            if(template)
+                            {
+
+                                conf.setConferenceTemplate(template).then(function (result)
+                                {
+                                    logger.debug('[DVP-Conference.AssignTemplateToConferenceDB] - [%s] - Template Added to Conference', reqId);
+                                    callback(undefined, true);
+
+                                }).catch(function(err)
+                                {
+                                    callback(err, false);
+                                });
+                            }
+                            else
+                            {
+                                callback(new Error('Template not found'), false);
+                            }
+                        }).catch(function(err)
+                        {
+                            callback(err, false);
+                        });
+                }
+                else
+                {
+                    callback(new Error('Conference not found'), false);
+                }
+            }).catch(function(err)
+            {
+                callback(err, false);
+            });
+    }
+    catch(ex)
+    {
+        callback(ex, false);
+    }
+};
+
+var GetTemplatesByGroup = function(reqId, groupId, callback)
+{
+    var emptyArr = [];
+    try
+    {
+        DbConn.ConferenceTemplate.findAll({where: [{TemplateGroup: groupId}]})
+            .then(function (templates)
+            {
+                callback(undefined, templates);
+
+            }).catch(function(err)
+            {
+                callback(err, emptyArr);
+            });
+    }
+    catch(ex)
+    {
+        callback(ex, emptyArr);
+    }
+
+};
+
+var GetTemplates = function(reqId, callback)
+{
+    var emptyArr = [];
+    try
+    {
+        DbConn.ConferenceTemplate.findAll()
+            .then(function (templates)
+            {
+                callback(undefined, templates);
+
+            }).catch(function(err)
+            {
+                callback(err, emptyArr);
+            });
+    }
+    catch(ex)
+    {
+        callback(ex, emptyArr);
+    }
+
+};
+
 
 module.exports.AddConferenceRoom = AddConferenceRoom;
 module.exports.UpdateConference = UpdateConference;
@@ -403,3 +497,6 @@ module.exports.UpdateStartEndTimes = UpdateStartEndTimes;
 module.exports.GetConferenceRoomsOfCompany = GetConferenceRoomsOfCompany;
 module.exports.GetRoomDetails = GetRoomDetails;
 module.exports.MapWithCloudEndUser = MapWithCloudEndUser;
+module.exports.AssignTemplateToConferenceDB = AssignTemplateToConferenceDB;
+module.exports.GetTemplatesByGroup = GetTemplatesByGroup;
+module.exports.GetTemplates = GetTemplates;
