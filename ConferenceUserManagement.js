@@ -9,6 +9,7 @@ var config=require('config');
 var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var moment=require('moment');
+var externalApHandler = require('./ExternalApiAccess.js');
 
 var port = config.Redis.port || 3000;
 var ip = config.Redis.ip;
@@ -156,6 +157,10 @@ function MapWithRoom(usrId,rmName,Company,Tenant,reqId,callback)
                         if(resUser)
                         {
                             resRoom.addConferenceUser(resUser).then(function (resMap) {
+
+                                //Send Notification - Need to send Email and Add To calendar
+
+                                externalApHandler.SendNotificationByKey(reqId, 'conference_user_assigned', reqId, 'CONFERENCE:USER:' + resUser.SipUACEndpointId, 'user assigned to room ' + resRoom.ConferenceName, reqId);
 
                                 callback(undefined,resMap);
                             }).catch(function (errMap) {

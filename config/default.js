@@ -27,5 +27,13 @@ module.exports = {
     "domain": "localhost",
     "port": 8085,
     "version":"6.0"
-  }
+  },
+
+  NS: {
+    ip: '127.0.0.1',
+    port: 8765,
+    version: '1.0.0.0'
+  },
+
+  Token: "123"
 };

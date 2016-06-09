@@ -25,12 +25,20 @@ module.exports = {
 
     },
 
+    NS: {
+        ip: 'SYS_NOTIFICATIONSERVICE_HOST',
+        port: 'SYS_NOTIFICATIONSERVICE_PORT',
+        version: 'SYS_NOTIFICATIONSERVICE_VERSION'
+    },
+
     "Host":
     {
         "domain": "HOST_NAME",
         "port": "HOST_CONFERENCE_PORT",
         "version": "HOST_VERSION"
-    }
+    },
+
+    Token: "HOST_TOKEN"
 };
 
 //NODE_CONFIG_DIR
