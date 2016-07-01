@@ -145,13 +145,14 @@ function UpdateConference(CName,obj,Company,Tenant,reqId,callback)
 
 }
 
-function DeleteConference(CName,reqId,callback)
+function DeleteConference(CName,Company,Tenant,reqId,callback)
 {
     try
     {
         var dt=new Date();
         var xx=new Date(dt.valueOf() + dt.getTimezoneOffset() * 60000);
         console.log(xx);
+
         var conditionalData = {
             StartTime: {
                 lt: xx
@@ -160,8 +161,12 @@ function DeleteConference(CName,reqId,callback)
             {
                 gt:xx
             },
-            ConferenceName:CName
+            ConferenceName:CName,
+            CompanyId:Company,
+            TenantId:Tenant
+
         };
+
         DbConn.Conference.findAll({where:conditionalData}).then(function (resCnf) {
 
             if(resCnf.length==0)
@@ -174,7 +179,6 @@ function DeleteConference(CName,reqId,callback)
                     callback(errDel,undefined);
                 });
 
-
             }
             else
             {
@@ -184,11 +188,6 @@ function DeleteConference(CName,reqId,callback)
         }).catch(function (errCnf) {
             callback(errCnf,undefined);
         });
-
-
-
-
-
 
 
     }
