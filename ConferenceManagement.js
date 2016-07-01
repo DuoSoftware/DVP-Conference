@@ -33,7 +33,8 @@ function AddConferenceRoom(obj,Company,Tenant,reqId,callback){
                         EndTime :obj.EndTime,
                         Domain :obj.Domain,
                         IsLocked :obj.IsLocked,
-                        MaxUser: obj.MaxUser
+                        MaxUser: obj.MaxUser,
+                        ActiveTemplate:obj.ActiveTemplate
 
 
 
