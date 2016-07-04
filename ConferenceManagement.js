@@ -111,7 +111,8 @@ function UpdateConference(CName,obj,Company,Tenant,reqId,callback)
                         IsLocked:obj.IsLocked,
                         MaxUser:obj.MaxUser,
                         StartTime: obj.StartTime,
-                        EndTime: obj.EndTime
+                        EndTime: obj.EndTime,
+
 
                     },
                     {

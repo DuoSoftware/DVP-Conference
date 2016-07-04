@@ -214,13 +214,13 @@ function DeleteUser(usrId,Company,Tenant,reqId,callback)
 
             if(resConf!=null)
             {
-                var x=CkeckTimeValidity(resConf.Conference.StartTime,resConf.Conference.EndTime,reqId);
-                if(x)
+               // var x=CkeckTimeValidity(resConf.Conference.StartTime,resConf.Conference.EndTime,reqId);
+                /*if(x)
                 {
                     callback(new Error("Cannot delete.room is running"),undefined);
                 }
                 else
-                {
+                {*/
                     DbConn.ConferenceUser.destroy({where:[{id:usrId}]}).then(function(result)
                     {
                         callback(undefined,result);
@@ -228,7 +228,7 @@ function DeleteUser(usrId,Company,Tenant,reqId,callback)
                     {
                         callback(err,undefined);
                     })
-                }
+                //}
             }
             else
             {
@@ -303,11 +303,11 @@ function GetUserDetails(usrId,reqId,callback)
     }
 }
 
-function CkeckTimeValidity(StTm,EdTm,reqId)
+/*function CkeckTimeValidity(StTm,EdTm,reqId)
 {
     var x = moment(moment()).isBetween(StTm, EdTm);
     return x;
-}
+}*/
 
 //Sprint 4
 function MuteUser(confName,User,reqId,callback)
@@ -1115,6 +1115,7 @@ function mapUserWithRoom(confName,confObj,Company,Tenant,reqId,callback)
 {
     try
     {
+
         DbConn.Conference.find({where:[{ConferenceName:confName},{CompanyId:Company},{TenantId:Tenant}]}).then(function (resRoom) {
 
             if(resRoom)
@@ -1122,71 +1123,84 @@ function mapUserWithRoom(confName,confObj,Company,Tenant,reqId,callback)
                 try
                 {
 
+                    DbConn.ConferenceUser.count({where:[{ConferenceId:confName}]}).then(function (resConfUserCount) {
 
-                    var CUserObj = DbConn.ConferenceUser
-                        .build(
+                        if(resConfUserCount<resRoom.MaxUser)
                         {
-                            ActiveTalker : confObj.ActiveTalker,
-                            Def : confObj.Def,
-                            Mute :  confObj.Mute,
-                            Mod: confObj.Mod,
-                            ObjClass : confObj.ObjClass,
-                            ObjType :confObj.ObjType,
-                            ObjCategory:confObj.ObjCategory,
-                            CurrentDef: confObj.CurrentDef,
-                            CurrentMute: confObj.CurrentMute,
-                            CurrentMod :confObj.CurrentMod,
-                            Destination :confObj.Destination,
-                            JoinType :confObj.JoinType,
-                            UserStatus:confObj.UserStatus
+                            var CUserObj = DbConn.ConferenceUser
+                                .build(
+                                {
+                                    ActiveTalker : confObj.ActiveTalker,
+                                    Def : confObj.Def,
+                                    Mute :  confObj.Mute,
+                                    Mod: confObj.Mod,
+                                    ObjClass : confObj.ObjClass,
+                                    ObjType :confObj.ObjType,
+                                    ObjCategory:confObj.ObjCategory,
+                                    CurrentDef: confObj.CurrentDef,
+                                    CurrentMute: confObj.CurrentMute,
+                                    CurrentMod :confObj.CurrentMod,
+                                    Destination :confObj.Destination,
+                                    JoinType :confObj.JoinType,
+                                    UserStatus:confObj.UserStatus
 
 
 
-                        }
-                    );
-                    CUserObj.save().then(function (resSave) {
+                                }
+                            );
+                            CUserObj.save().then(function (resSave) {
 
-                        if(confObj.SipUACEndpointId)
-                        {
-                            DbConn.SipUACEndpoint.find({where:[{id:confObj.SipUACEndpointId}]}).then(function (resSip) {
+                                if(confObj.SipUACEndpointId)
+                                {
+                                    DbConn.SipUACEndpoint.find({where:[{id:confObj.SipUACEndpointId}]}).then(function (resSip) {
 
-                                CUserObj.setSipUACEndpoint(resSip).then(function (resMap) {
+                                        CUserObj.setSipUACEndpoint(resSip).then(function (resMap) {
 
-                                    resRoom.addConferenceUser(resMap).then(function (resCuser) {
+                                            resRoom.addConferenceUser(resMap).then(function (resCuser) {
 
-                                        callback(undefined,resCuser);
+                                                callback(undefined,resCuser);
 
-                                    }).catch(function (errCuser) {
+                                            }).catch(function (errCuser) {
 
-                                        callback(errCuser,undefined);
-                                    })
-                                }).catch(function (errMap) {
-                                    callback(errMap,undefined);
-                                });
+                                                callback(errCuser,undefined);
+                                            })
+                                        }).catch(function (errMap) {
+                                            callback(errMap,undefined);
+                                        });
 
-                            }).catch(function (errSip) {
+                                    }).catch(function (errSip) {
+                                        callback(errSip,undefined);
+                                    });
+                                }
+                                else
+                                {
+                                    resRoom.addConferenceUser(CUserObj).then(function (resExtUser) {
+
+                                        callback(undefined,resExtUser);
+
+                                    }).catch(function (errExtUser) {
+
+                                        callback(errExtUser,undefined);
+
+                                    });
+                                }
+
+
+
+                            }).catch(function (errSave) {
+
+                                callback(errSave,undefined);
 
                             });
+
                         }
                         else
                         {
-                            resRoom.addConferenceUser(CUserObj).then(function (resExtUser) {
-
-                                callback(undefined,resExtUser);
-
-                            }).catch(function (errExtUser) {
-
-                                callback(errExtUser,undefined);
-
-                            });
+                            callback(new Error("Eligible user limit exceeded"),undefined);
                         }
 
-
-
-                    }).catch(function (errSave) {
-
-                        callback(errSave,undefined);
-
+                    }).catch(function (errConfUserCount) {
+                        callback(new Error("Error in searching Eligible user limit  "),undefined);
                     });
 
 
