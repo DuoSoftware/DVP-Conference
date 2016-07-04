@@ -112,6 +112,7 @@ function UpdateConference(CName,obj,Company,Tenant,reqId,callback)
                         MaxUser:obj.MaxUser,
                         StartTime: obj.StartTime,
                         EndTime: obj.EndTime,
+                        ActiveTemplate:obj.ActiveTemplate
 
 
                     },
