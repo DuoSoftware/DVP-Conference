@@ -1023,6 +1023,7 @@ function addUserToRoom(usrId,rmName,Company,Tenant,reqId,callback)
                             resRoom.addConferenceUser(resUser).then(function (resMap) {
 
                                 callback(undefined,resMap);
+
                             }).catch(function (errMap) {
 
                                 callback(errMap,undefined);
@@ -1043,8 +1044,8 @@ function addUserToRoom(usrId,rmName,Company,Tenant,reqId,callback)
                                         Def : false,
                                         Mute :  false,
                                         Mod: false,
-                                        ObjClass : "ConfClz",
-                                        ObjType :"TYP",
+                                        ObjClass : "BASIC",
+                                        ObjType :"BASIC",
                                         ObjCategory:"INTERNAL",
                                         CurrentDef: false,
                                         CurrentMute: false,
@@ -1061,7 +1062,9 @@ function addUserToRoom(usrId,rmName,Company,Tenant,reqId,callback)
                                     CUserObj.setSipUACEndpoint(resSip).then(function (resMap) {
                                         //callback(undefined,resMap);
                                         resRoom.addConferenceUser(resMap).then(function (resCuser) {
+
                                             callback(undefined,resCuser);
+
                                         }).catch(function (errRuser) {
                                             callback(errRuser,undefined);
                                         })
@@ -1145,13 +1148,16 @@ function mapUserWithRoom(confName,confObj,Company,Tenant,reqId,callback)
 
                         if(confObj.SipUACEndpointId)
                         {
-                            DbConn.SipUACEndpoint.find({where:[{id:confObj.SipUACEndpoint}]}).then(function (resSip) {
+                            DbConn.SipUACEndpoint.find({where:[{id:confObj.SipUACEndpointId}]}).then(function (resSip) {
 
                                 CUserObj.setSipUACEndpoint(resSip).then(function (resMap) {
-                                    //callback(undefined,resMap);
+
                                     resRoom.addConferenceUser(resMap).then(function (resCuser) {
+
                                         callback(undefined,resCuser);
+
                                     }).catch(function (errCuser) {
+
                                         callback(errCuser,undefined);
                                     })
                                 }).catch(function (errMap) {
@@ -1167,15 +1173,20 @@ function mapUserWithRoom(confName,confObj,Company,Tenant,reqId,callback)
                             resRoom.addConferenceUser(CUserObj).then(function (resExtUser) {
 
                                 callback(undefined,resExtUser);
+
                             }).catch(function (errExtUser) {
+
                                 callback(errExtUser,undefined);
+
                             });
                         }
 
 
 
                     }).catch(function (errSave) {
+
                         callback(errSave,undefined);
+
                     });
 
 

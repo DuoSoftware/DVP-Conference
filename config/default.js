@@ -26,7 +26,7 @@ module.exports = {
   {
     "domain": "localhost",
     "port": 8085,
-    "version":"6.0"
+    "version":"1.0.0.0"
   },
 
   NS: {
