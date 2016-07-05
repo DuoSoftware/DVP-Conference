@@ -685,6 +685,184 @@ RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRooms',au
     next();
 });
 
+RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRooms/Page/:rowCount/:pageNo',authorization({resource:"conference", action:"read"}),function(req,res,next)
+{
+    var reqId='';
+
+    try
+    {
+        reqId = uuid.v1();
+    }
+    catch(ex)
+    {
+
+    }
+
+
+
+    try {
+
+
+        if(!req.user.company || !req.user.tenant)
+        {
+            throw new Error("Invalid company or tenant");
+        }
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+
+        Room.GetConferenceRoomsOfCompanyWithPaging(Company,Tenant,req.params.rowCount,req.params.pageNo,reqId,function(err,resz)
+        {
+
+            if(err)
+            {
+
+
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+                res.end(jsonString);
+            }
+
+        });
+
+    }
+    catch(ex)
+    {
+        //log.fatal("Exception found in AddAppointment : "+ex);
+        //logger.error('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Exception occurred when service started : NewAppointment -  Data - %s ',reqId,JSON.stringify(req.body),ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+        res.end(jsonString);
+    }
+    next();
+});
+
+RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRooms/PageCount',authorization({resource:"conference", action:"read"}),function(req,res,next)
+{
+    var reqId='';
+
+    try
+    {
+        reqId = uuid.v1();
+    }
+    catch(ex)
+    {
+
+    }
+
+
+
+    try {
+
+
+        if(!req.user.company || !req.user.tenant)
+        {
+            throw new Error("Invalid company or tenant");
+        }
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+
+        Room.GetCountOfConferenceRooms(Company,Tenant,reqId,function(err,resz)
+        {
+
+            if(err)
+            {
+
+
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+                res.end(jsonString);
+            }
+
+        });
+
+    }
+    catch(ex)
+    {
+        //log.fatal("Exception found in AddAppointment : "+ex);
+        //logger.error('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Exception occurred when service started : NewAppointment -  Data - %s ',reqId,JSON.stringify(req.body),ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+        res.end(jsonString);
+    }
+    next();
+});
+
+RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ActiveConferenceRooms',authorization({resource:"conference", action:"read"}),function(req,res,next)
+{
+    var reqId='';
+
+    try
+    {
+        reqId = uuid.v1();
+    }
+    catch(ex)
+    {
+
+    }
+
+
+    try {
+
+
+        if(!req.user.company || !req.user.tenant)
+        {
+            throw new Error("Invalid company or tenant");
+        }
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+
+        Room.GetActiveConferenceRooms(Company,Tenant,reqId,function(err,resz)
+        {
+
+            if(err)
+            {
+
+
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+                res.end(jsonString);
+            }
+
+        });
+
+    }
+    catch(ex)
+    {
+        //log.fatal("Exception found in AddAppointment : "+ex);
+        //logger.error('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Exception occurred when service started : NewAppointment -  Data - %s ',reqId,JSON.stringify(req.body),ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+        res.end(jsonString);
+    }
+    next();
+});
+
+
+
 RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:ConfName',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
@@ -1486,12 +1664,12 @@ RestServer.post('/DVP/API/'+version+'/Conference/:confName/user',authorization({
 
                     console.log("Sip data ", JSON.stringify(req.body));
 
-                   /* var MessageData={
+                    /* var MessageData={
 
-                        "Conference Name":req.params.confName,
-                        "Stating Time":confRoom.StartTime,
-                        "Ending Time":confRoom.EndTime,
-                    }*/
+                     "Conference Name":req.params.confName,
+                     "Stating Time":confRoom.StartTime,
+                     "Ending Time":confRoom.EndTime,
+                     }*/
 
                     var MessageDetails = "You have invited to a Conference named "+req.params.confName+" on "+confRoom.StartTime;
 
@@ -1508,35 +1686,35 @@ RestServer.post('/DVP/API/'+version+'/Conference/:confName/user',authorization({
 
 
 
-                     var httpUrl = util.format('http://127.0.0.1:8089/DVP/API/%s/NotificationService/Notification/initiate', version);
-                     console.log("URL "+httpUrl);
-                     var options = {
-                     url : httpUrl,
-                     method : 'POST',
-                     json : msgObject,
-                     headers:{
-                     'eventName':'conference_user_assigned',
-                     'eventUuid':'gsdbshmx45y28',
-                     'authorization':"bearer "+token
+                    var httpUrl = util.format('http://127.0.0.1:8089/DVP/API/%s/NotificationService/Notification/initiate', version);
+                    console.log("URL "+httpUrl);
+                    var options = {
+                        url : httpUrl,
+                        method : 'POST',
+                        json : msgObject,
+                        headers:{
+                            'eventName':'conference_user_assigned',
+                            'eventUuid':'gsdbshmx45y28',
+                            'authorization':"bearer "+token
 
-                     }
+                        }
 
-                     };
+                    };
 
 
-                     httpReq(options, function (error, response, body)
-                     {
-                     if (!error && response.statusCode == 200)
-                     {
-                     console.log("no errrs");
-                     //console.log(JSON.stringify(response));
-                     }
-                     else
-                     {
-                     console.log("errrs  "+error);
+                    httpReq(options, function (error, response, body)
+                    {
+                        if (!error && response.statusCode == 200)
+                        {
+                            console.log("no errrs");
+                            //console.log(JSON.stringify(response));
+                        }
+                        else
+                        {
+                            console.log("errrs  "+error);
 
-                     }
-                     });
+                        }
+                    });
                 }
 
 

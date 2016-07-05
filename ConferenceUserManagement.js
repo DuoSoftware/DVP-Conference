@@ -1144,7 +1144,7 @@ function mapUserWithRoom(confName,confObj,Company,Tenant,reqId,callback)
                                     CurrentMod :confObj.CurrentMod,
                                     Destination :confObj.Destination,
                                     JoinType :confObj.JoinType,
-                                    UserStatus:confObj.UserStatus
+                                    UserStatus:"ASSIGNED"
 
 
 

@@ -11,64 +11,97 @@ function AddConferenceRoom(obj,Company,Tenant,reqId,callback){
 
     try
     {
-        DbConn.Extension.find({where:[{Extension:obj.Extension} ,{CompanyId:Company},{TenantId:Tenant}]}).then(function (resExt) {
+        if(obj.Extension)
+        {
+            DbConn.Extension.find({where:[{Extension:obj.Extension} ,{CompanyId:Company},{TenantId:Tenant}]}).then(function (resExt) {
 
-            if(resExt)
-            {
-                //logger.debug('[DVP-Conference.NewConference] - [%s] - [PGSQL] - Found Extension %s',reqId,JSON.stringify(resExt));
+                if(resExt)
+                {
+                    //logger.debug('[DVP-Conference.NewConference] - [%s] - [PGSQL] - Found Extension %s',reqId,JSON.stringify(resExt));
 
-                var ConfObj = DbConn.Conference
-                    .build(
+                    if(resExt.ObjCategory=="CONFERENCE")
                     {
-                        ConferenceName : obj.ConferenceName,
-                        Description : obj.Description,
-                        CompanyId :  Company,
-                        TenantId: Tenant,
-                        ObjClass : "ConfClz",
-                        ObjType :"ConfTyp",
-                        ObjCategory:"ConfCat",
-                        Pin: obj.Pin,
-                        AllowAnonymousUser: obj.AllowAnonymousUser,
-                        StartTime :obj.StartTime,
-                        EndTime :obj.EndTime,
-                        Domain :obj.Domain,
-                        IsLocked :obj.IsLocked,
-                        MaxUser: obj.MaxUser,
-                        ActiveTemplate:obj.ActiveTemplate
+                        DbConn.Conference.find({where:[{CompanyId:Company},{TenantId:Tenant},{ExtensionId:resExt.id}]}).then(function (resConfExt) {
+                            if(resConfExt)
+                            {
+                                logger.error('[DVP-Conference.NewConference] - [%s] - [PGSQL] - Extension is already in use : Extension : %s',reqId,obj.Extension);
+                                callback(new Error("Extension is already in use : Extension : ",obj.Extension),undefined);
+                            }
+                            else
+                            {
+                                var ConfObj = DbConn.Conference
+                                    .build(
+                                    {
+                                        ConferenceName : obj.ConferenceName,
+                                        Description : obj.Description,
+                                        CompanyId :  Company,
+                                        TenantId: Tenant,
+                                        ObjClass : "ConfClz",
+                                        ObjType :"ConfTyp",
+                                        ObjCategory:"ConfCat",
+                                        Pin: obj.Pin,
+                                        AllowAnonymousUser: obj.AllowAnonymousUser,
+                                        StartTime :obj.StartTime,
+                                        EndTime :obj.EndTime,
+                                        Domain :obj.Domain,
+                                        IsLocked :obj.IsLocked,
+                                        MaxUser: obj.MaxUser,
+                                        ActiveTemplate:obj.ActiveTemplate
 
 
 
 
+                                    }
+                                );
+                                ConfObj.save().then(function (resSave) {
+
+
+                                    ConfObj.setExtension(resExt).then(function (resMap) {
+
+                                        callback(undefined,resMap);
+                                    }).catch(function (errMap) {
+
+                                        callback(errMap,undefined);
+                                    });
+
+
+
+                                }).catch(function (errSave) {
+                                    callback(errSave,undefined);
+                                });
+                            }
+
+                        }).catch(function (errConfExt) {
+                            logger.error('[DVP-Conference.NewConference] - [%s] - [PGSQL] - Error in searching Conference Extension data : Extension : %s',reqId,obj.Extension);
+                            callback(errConfExt,undefined);
+                        })
                     }
-                );
-                ConfObj.save().then(function (resSave) {
-
-
-                    ConfObj.setExtension(resExt).then(function (resMap) {
-
-                        callback(undefined,resMap);
-                    }).catch(function (errMap) {
-
-                        callback(errMap,undefined);
-                    });
+                    else
+                    {
+                        logger.error('[DVP-Conference.NewConference] - [%s] - [PGSQL] - Invalid Extension received : Extension : %s',reqId,obj.Extension);
+                        callback(new Error("Invalid Extension received : Extension : ",obj.Extension),undefined);
+                    }
 
 
 
-                }).catch(function (errSave) {
-                    callback(errSave,undefined);
-                });
 
 
-            }
-            else
-            {
+                }
+                else
+                {
 
-                callback(new Error("Empty returns for Extension"),undefined);
-            }
+                    callback(new Error("Empty returns for Extension"),undefined);
+                }
 
-        }).catch(function (errExt) {
-            callback(errExt,undefined);
-        });
+            }).catch(function (errExt) {
+                callback(errExt,undefined);
+            });
+        }
+        else
+        {
+            callback(new Error("No extension record found"),undefined);
+        }
+
 
     }
     catch(ex)
@@ -99,29 +132,36 @@ function UpdateConference(CName,obj,Company,Tenant,reqId,callback)
 
 
         };
+
+
         DbConn.Conference.find({where:conditionalData}).then(function(resCnf)
         {
             if(!resCnf)
             {
-                DbConn.Conference.update(
+                var updateObject=
+                {
+                    Pin:obj.Pin,
+                    AllowAnonymousUser:obj.AllowAnonymousUser,
+                    Domain:obj.Domain,
+                    IsLocked:obj.IsLocked,
+                    MaxUser:obj.MaxUser,
+                    StartTime: obj.StartTime,
+                    EndTime: obj.EndTime,
+                    ActiveTemplate:obj.ActiveTemplate
+                }
+
+
+                var validExtensionID=validateExtension(CName,obj.Extension,Company,Tenant);
+
+                if(validExtensionID)
+                {
+                    updateObject.ExtensionId=validExtensionID;
+                }
+
+                DbConn.Conference.updateAttributes(updateObject,{where:[{ConferenceName:CName}]}).then(function(resCUpdate)
                     {
-                        Pin:obj.Pin,
-                        AllowAnonymousUser:obj.AllowAnonymousUser,
-                        Domain:obj.Domain,
-                        IsLocked:obj.IsLocked,
-                        MaxUser:obj.MaxUser,
-                        StartTime: obj.StartTime,
-                        EndTime: obj.EndTime,
-                        ActiveTemplate:obj.ActiveTemplate
-
-
-                    },
-                    {
-                        where:[{ConferenceName:CName}]
-                    }
-
-                ).then(function(resCUpdate){
                         callback(undefined,resCUpdate);
+
                     }).catch(function(errCUpdate)
                     {
                         callback(errCUpdate,undefined);
@@ -129,7 +169,7 @@ function UpdateConference(CName,obj,Company,Tenant,reqId,callback)
             }
             else
             {
-                callback(new Error("Running Conference"),undefined);
+                callback(new Error("Invalid or Running Conference, Cannot update"),undefined);
             }
 
         }).catch(function(errCnf)
@@ -274,6 +314,111 @@ function GetConferenceRoomsOfCompany(Company,Tenant,reqId,callback)
             else
             {
                 callback(new Error("No conference room found"),undefined);
+            }
+
+
+        }).catch(function(errConf)
+        {
+            callback(errConf,undefined);
+        });
+
+
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+}
+
+function GetConferenceRoomsOfCompanyWithPaging(Company,Tenant,rowCount,pageNo,reqId,callback)
+{
+    try
+    {
+        DbConn.Conference.findAll({where:[{CompanyId:Company},{TenantId:Tenant}], offset:((pageNo - 1) * rowCount),
+            limit: rowCount}).then(function(resConf)
+        {
+            if(resConf.length>0)
+            {
+                callback(undefined,resConf);
+            }
+            else
+            {
+                callback(new Error("No conference room found"),undefined);
+            }
+
+
+        }).catch(function(errConf)
+        {
+            callback(errConf,undefined);
+        });
+
+
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+}
+
+function GetCountOfConferenceRooms(Company,Tenant,reqId,callback)
+{
+    try
+    {
+        DbConn.Conference.count({where:[{CompanyId:Company},{TenantId:Tenant}]}).then(function(resConf)
+        {
+            if(resConf)
+            {
+                callback(undefined,resConf);
+            }
+            else
+            {
+                callback(new Error("No conference room found"),undefined);
+            }
+
+
+        }).catch(function(errConf)
+        {
+            callback(errConf,undefined);
+        });
+
+
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+}
+
+function GetActiveConferenceRooms(Company,Tenant,reqId,callback)
+{
+    try
+    {
+
+        var dt=new Date();
+        var xx=new Date(dt.valueOf() + dt.getTimezoneOffset() * 60000);
+        console.log(xx);
+        var conditionalData = {
+            StartTime: {
+                lt: [xx]
+            },
+            EndTime:
+            {
+                gt:[xx]
+            },
+            CompanyId :  Company,
+            TenantId: Tenant
+        };
+
+
+        DbConn.Conference.findAll(conditionalData).then(function(resConf)
+        {
+            if(resConf)
+            {
+                callback(undefined,resConf);
+            }
+            else
+            {
+                callback(new Error("No conference Active room found"),undefined);
             }
 
 
@@ -492,6 +637,38 @@ var GetTemplates = function(reqId, callback)
 };
 
 
+var validateExtension = function (conference,extension,company,tenant) {
+
+    DbConn.Extension.find({where:[{Extension:extension} ,{CompanyId:company},{TenantId:tenant}]}).then(function (resExt) {
+
+        if(resExt.ObjCategory=="CONFERENCE")
+        {
+            DbConn.Conference.find({where:[{CompanyId:company},{TenantId:tenant},{ExtensionId:resExt.id}]}).then(function (resConf) {
+
+                if(!resConf)
+                {
+                    return resExt.id;
+                }
+                else if(resConf.ConferenceName==conference)
+                {
+                    return false;
+                }
+                else
+                {
+                    return false;
+                }
+
+            }).catch(function (errConf) {
+                return false;
+            });
+        }
+
+    }).catch(function (errExt) {
+        return false;
+    });
+
+}
+
 module.exports.AddConferenceRoom = AddConferenceRoom;
 module.exports.UpdateConference = UpdateConference;
 module.exports.DeleteConference = DeleteConference;
@@ -502,3 +679,6 @@ module.exports.MapWithCloudEndUser = MapWithCloudEndUser;
 module.exports.AssignTemplateToConferenceDB = AssignTemplateToConferenceDB;
 module.exports.GetTemplatesByGroup = GetTemplatesByGroup;
 module.exports.GetTemplates = GetTemplates;
+module.exports.GetConferenceRoomsOfCompanyWithPaging = GetConferenceRoomsOfCompanyWithPaging;
+module.exports.GetCountOfConferenceRooms = GetCountOfConferenceRooms;
+module.exports.GetActiveConferenceRooms = GetActiveConferenceRooms;
