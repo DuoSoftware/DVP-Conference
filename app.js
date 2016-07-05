@@ -861,8 +861,6 @@ RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ActiveConferenceRoo
     next();
 });
 
-
-
 RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:ConfName',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
