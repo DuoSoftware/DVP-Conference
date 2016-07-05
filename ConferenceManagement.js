@@ -435,6 +435,52 @@ function GetActiveConferenceRooms(Company,Tenant,reqId,callback)
     }
 }
 
+function GetActiveConferenceRoomCount(Company,Tenant,reqId,callback)
+{
+    try
+    {
+
+        var dt=new Date();
+        var xx=new Date(dt.valueOf() + dt.getTimezoneOffset() * 60000);
+        console.log(xx);
+        var conditionalData = {
+            StartTime: {
+                lt: [xx]
+            },
+            EndTime:
+            {
+                gt:[xx]
+            },
+            CompanyId :  Company,
+            TenantId: Tenant
+        };
+
+
+        DbConn.Conference.count(conditionalData).then(function(resConf)
+        {
+            if(resConf)
+            {
+                callback(undefined,resConf);
+            }
+            else
+            {
+                callback(new Error("No conference Active room found"),undefined);
+            }
+
+
+        }).catch(function(errConf)
+        {
+            callback(errConf,undefined);
+        });
+
+
+    }
+    catch(ex)
+    {
+        callback(ex,undefined);
+    }
+}
+
 function GetRoomDetails(CID,Company,Tenant,reqId,callback)
 {
 
@@ -682,3 +728,4 @@ module.exports.GetTemplates = GetTemplates;
 module.exports.GetConferenceRoomsOfCompanyWithPaging = GetConferenceRoomsOfCompanyWithPaging;
 module.exports.GetCountOfConferenceRooms = GetCountOfConferenceRooms;
 module.exports.GetActiveConferenceRooms = GetActiveConferenceRooms;
+module.exports.GetActiveConferenceRoomCount = GetActiveConferenceRoomCount;

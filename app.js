@@ -861,6 +861,64 @@ RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ActiveConferenceRoo
     next();
 });
 
+RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ActiveConferenceRooms/PageCount',authorization({resource:"conference", action:"read"}),function(req,res,next)
+{
+    var reqId='';
+
+    try
+    {
+        reqId = uuid.v1();
+    }
+    catch(ex)
+    {
+
+    }
+
+
+    try {
+
+
+        if(!req.user.company || !req.user.tenant)
+        {
+            throw new Error("Invalid company or tenant");
+        }
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+
+        Room.GetActiveConferenceRoomCount(Company,Tenant,reqId,function(err,resz)
+        {
+
+            if(err)
+            {
+
+
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+                res.end(jsonString);
+            }
+
+        });
+
+    }
+    catch(ex)
+    {
+        //log.fatal("Exception found in AddAppointment : "+ex);
+        //logger.error('[DVP-LimitHandler.NewAppointment] - [%s] - [HTTP]  - Exception occurred when service started : NewAppointment -  Data - %s ',reqId,JSON.stringify(req.body),ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
+        res.end(jsonString);
+    }
+    next();
+});
+
 RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceRoom/:ConfName',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
@@ -978,7 +1036,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:Use
 
 
 
-RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/Mute',authorization({resource:"conference", action:"read"}),function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/Mute',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
@@ -1057,7 +1115,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/M
     next();
 });
 
-RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/UnMute',authorization({resource:"conference", action:"read"}),function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/UnMute',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
@@ -1128,7 +1186,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/U
     next();
 });
 
-RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/Deaf',authorization({resource:"conference", action:"read"}),function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/Deaf',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
@@ -1188,7 +1246,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/D
     next();
 });
 
-RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/UnDeaf',authorization({resource:"conference", action:"read"}),function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/UnDeaf',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
@@ -1245,7 +1303,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/U
     next();
 });
 
-RestServer.get('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/Kick',authorization({resource:"conference", action:"read"}),function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/Kick',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
