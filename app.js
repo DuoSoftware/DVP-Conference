@@ -7,12 +7,14 @@ var config = require('config');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var uuid = require('node-uuid');
 var cors = require('cors');
+var httpReq = require('request');
 var Room=require('./ConferenceManagement.js');
 var User=require('./ConferenceUserManagement.js');
 var jwt = require('restify-jwt');
 var secret = require('dvp-common/Authentication/Secret.js');
 var authorization = require('dvp-common/Authentication/Authorization.js');
-
+var token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJkaW51c2hhZGNrIiwianRpIjoiMjViZjZmZTItZjZjNC00ZWJhLWFmODgtNmMxNjIxOTU4OGRiIiwic3ViIjoiNTZhOWU3NTlmYjA3MTkwN2EwMDAwMDAxMjVkOWU4MGI1YzdjNGY5ODQ2NmY5MjExNzk2ZWJmNDMiLCJleHAiOjE4OTI0NDE2NzIsInRlbmFudCI6MSwiY29tcGFueSI6Mywic2NvcGUiOlt7InJlc291cmNlIjoiYWxsIiwiYWN0aW9ucyI6ImFsbCJ9XSwiaWF0IjoxNDYwNDM4MDcyfQ.aPoVPiTtoGFgnKmhdLBTzwTrQRTGWWliYujHP5NONqU";
+var util = require('util');
 
 var port = config.Host.port || 3000;
 var version=config.Host.version;
@@ -1463,7 +1465,7 @@ RestServer.post('/DVP/API/'+version+'/Conference/:confName/user',authorization({
         var Company = req.user.company;
         var Tenant = req.user.tenant;
 
-        User.mapUserWithRoom(req.params.confName,req.body,Company,Tenant,reqId,function(err,resz)
+        User.mapUserWithRoom(req.params.confName,req.body,Company,Tenant,reqId,function(err,resz,confRoom,sipData)
         {
 
             if(err)
@@ -1477,6 +1479,69 @@ RestServer.post('/DVP/API/'+version+'/Conference/:confName/user',authorization({
             else
             {
                 //log.info("Appointment saving Succeeded : "+resz);
+
+                if(req.body.SipUACEndpointId && sipData.SipUsername)
+                {
+
+
+                    console.log("Sip data ", JSON.stringify(req.body));
+
+                   /* var MessageData={
+
+                        "Conference Name":req.params.confName,
+                        "Stating Time":confRoom.StartTime,
+                        "Ending Time":confRoom.EndTime,
+                    }*/
+
+                    var MessageDetails = "You have invited to a Conference named "+req.params.confName+" on "+confRoom.StartTime;
+
+                    var msgObject =
+                    {
+                        "To":sipData.GuRefId,
+                        "CallbackURL":"",
+                        "Direction":"STATELESS",
+                        "Message":MessageDetails,
+                        "Ref":"fgdy34",
+                        "From":"conference manager",
+                        "MessageType":"basic"
+                    }
+
+
+
+                     var httpUrl = util.format('http://127.0.0.1:8089/DVP/API/%s/NotificationService/Notification/initiate', version);
+                     console.log("URL "+httpUrl);
+                     var options = {
+                     url : httpUrl,
+                     method : 'POST',
+                     json : msgObject,
+                     headers:{
+                     'eventName':'conference_user_assigned',
+                     'eventUuid':'gsdbshmx45y28',
+                     'authorization':"bearer "+token
+
+                     }
+
+                     };
+
+
+                     httpReq(options, function (error, response, body)
+                     {
+                     if (!error && response.statusCode == 200)
+                     {
+                     console.log("no errrs");
+                     //console.log(JSON.stringify(response));
+                     }
+                     else
+                     {
+                     console.log("errrs  "+error);
+
+                     }
+                     });
+                }
+
+
+
+
                 var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
                 //logger.debug('[DVP-LimitHandler.NewAppointment] - [%s] - Request response : %s ',reqId,jsonString);
                 res.end(jsonString);
@@ -1610,8 +1675,6 @@ RestServer.get('/DVP/API/'+version+'/Conference/:confName/users',authorization({
     }
     next();
 });
-
-
 
 
 

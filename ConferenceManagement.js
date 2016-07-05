@@ -265,7 +265,7 @@ function GetConferenceRoomsOfCompany(Company,Tenant,reqId,callback)
 {
     try
     {
-        DbConn.Conference.findAll([{CompanyId:Company},{TenantId:Tenant}]).then(function(resConf)
+        DbConn.Conference.findAll({where:[{CompanyId:Company},{TenantId:Tenant}]}).then(function(resConf)
         {
             if(resConf.length>0)
             {

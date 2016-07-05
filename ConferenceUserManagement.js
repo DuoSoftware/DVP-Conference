@@ -1113,6 +1113,7 @@ function addUserToRoom(usrId,rmName,Company,Tenant,reqId,callback)
 
 function mapUserWithRoom(confName,confObj,Company,Tenant,reqId,callback)
 {
+    var roomData;
     try
     {
 
@@ -1120,6 +1121,7 @@ function mapUserWithRoom(confName,confObj,Company,Tenant,reqId,callback)
 
             if(resRoom)
             {
+                roomData=resRoom;
                 try
                 {
 
@@ -1158,29 +1160,29 @@ function mapUserWithRoom(confName,confObj,Company,Tenant,reqId,callback)
 
                                             resRoom.addConferenceUser(resMap).then(function (resCuser) {
 
-                                                callback(undefined,resCuser);
+                                                callback(undefined,resCuser,roomData,resSip);
 
                                             }).catch(function (errCuser) {
 
-                                                callback(errCuser,undefined);
+                                                callback(errCuser,undefined,roomData,resSip);
                                             })
                                         }).catch(function (errMap) {
-                                            callback(errMap,undefined);
+                                            callback(errMap,undefined,roomData,resSip);
                                         });
 
                                     }).catch(function (errSip) {
-                                        callback(errSip,undefined);
+                                        callback(errSip,undefined,roomData,undefined);
                                     });
                                 }
                                 else
                                 {
                                     resRoom.addConferenceUser(CUserObj).then(function (resExtUser) {
 
-                                        callback(undefined,resExtUser);
+                                        callback(undefined,resExtUser,roomData,undefined);
 
                                     }).catch(function (errExtUser) {
 
-                                        callback(errExtUser,undefined);
+                                        callback(errExtUser,undefined,roomData,undefined);
 
                                     });
                                 }
@@ -1189,34 +1191,34 @@ function mapUserWithRoom(confName,confObj,Company,Tenant,reqId,callback)
 
                             }).catch(function (errSave) {
 
-                                callback(errSave,undefined);
+                                callback(errSave,undefined,roomData,undefined);
 
                             });
 
                         }
                         else
                         {
-                            callback(new Error("Eligible user limit exceeded"),undefined);
+                            callback(new Error("Eligible user limit exceeded"),undefined,undefined,undefined);
                         }
 
                     }).catch(function (errConfUserCount) {
-                        callback(new Error("Error in searching Eligible user limit  "),undefined);
+                        callback(new Error("Error in searching Eligible user limit  "),undefined,undefined,undefined);
                     });
 
 
                 }
                 catch(ex)
                 {
-                    callback(ex,undefined);
+                    callback(ex,undefined,roomData,undefined);
                 }
             }
             else
             {
-                callback(new Error("No conference Room"),undefined);
+                callback(new Error("No conference Room"),undefined,undefined,undefined);
             }
 
         }).catch(function (errRoom) {
-            callback(errRoom,undefined);
+            callback(errRoom,undefined,undefined,undefined);
         });
 
 
@@ -1224,7 +1226,7 @@ function mapUserWithRoom(confName,confObj,Company,Tenant,reqId,callback)
     }
     catch(ex)
     {
-        callback(ex,undefined);
+        callback(ex,undefined,undefined,undefined);
     }
 }
 
