@@ -312,7 +312,7 @@ function GetUserDetails(usrId,reqId,callback)
 //Sprint 4
 function MuteUser(confName,User,reqId,callback)
 {
-    GetConferenceID(confName,reqId,function(errConf,resConf)
+    /*GetConferenceID(confName,reqId,function(errConf,resConf)
     {
         if(errConf)
         {
@@ -362,8 +362,51 @@ function MuteUser(confName,User,reqId,callback)
                 }
             })
         }
-    })
+    })*/
 
+
+
+    GetCallServerID(confName,reqId,function(errCS,resCS)
+    {
+        if(errCS)
+        {
+            callback(errCS,callback);
+        }
+        else
+        {
+            GetCallserverIP(resCS,reqId,function(errIP,resIP)
+            {
+                if(errIP)
+                {
+                    callback(errIP,undefined);
+                }
+                else
+                {
+                    var httpUrl=resIP+':8080/api/conference?'+confName+" mute ?"+User;
+                    var options = {
+                        url: httpUrl
+                    };
+
+                    httpReq(options, function (error, response, body)
+                    {
+                        if (!error && response.statusCode == 200)
+                        {
+                            var apiResp = JSON.parse(body);
+
+                            //logger.debug('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api returned : %s', reqId, body);
+
+                            callback(apiResp.Exception, apiResp.Result);
+                        }
+                        else
+                        {
+                            //logger.error('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api call failed', reqId, error);
+                            callback(error, undefined);
+                        }
+                    });
+                }
+            });
+        }
+    });
 
 
 }
@@ -955,13 +998,15 @@ function GetCallServerID(CSName,reqId,callback)
 
 }
 
-function GetConferenceID(confName,reqId,undefined)
+function GetConferenceID(confName,reqId,callback)
 {
+
+    var conferenceHash="CONFERENCE:"+confName;
 
     client.get(confName,function(errCID,resCID)
     {
         callback(errCID,resCID);
-    })
+    });
 
 }
 
@@ -1291,6 +1336,52 @@ function usersOfConference(confName,Company,Tenant,reqId,callback)
     }
 }
 
+function manageConfUserStatus(confName,User,operation,reqId,callback)
+{
+    GetCallServerID(confName,reqId,function(errCS,resCS)
+    {
+        if(errCS)
+        {
+            callback(errCS,callback);
+        }
+        else
+        {
+            GetCallserverIP(resCS,reqId,function(errIP,resIP)
+            {
+                if(errIP)
+                {
+                    callback(errIP,undefined);
+                }
+                else
+                {
+                    var httpUrl=resIP+':8080/api/conference?'+confName+" "+operation+" ?"+User;
+                    var options = {
+                        url: httpUrl,
+                        method : 'POST',
+                    };
+
+                    httpReq(options, function (error, response, body)
+                    {
+                        if (!error && response.statusCode == 200)
+                        {
+                            var apiResp = JSON.parse(body);
+
+                            //logger.debug('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api returned : %s', reqId, body);
+
+                            callback(apiResp.Exception, apiResp.Result);
+                        }
+                        else
+                        {
+                            //logger.error('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api call failed', reqId, error);
+                            callback(error, undefined);
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
 
 
 module.exports.AddConferenceUser = AddConferenceUser;
@@ -1319,6 +1410,7 @@ module.exports.addUserToRoom = addUserToRoom;
 module.exports.mapUserWithRoom = mapUserWithRoom;
 module.exports.updateUser = updateUser;
 module.exports.usersOfConference = usersOfConference;
+module.exports.manageConfUserStatus = manageConfUserStatus;
 
 
 

@@ -5,6 +5,7 @@ var DbConn = require('dvp-dbmodels');
 var messageFormatter = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var moment=require('moment');
+var underscore=require('underscore');
 
 
 function AddConferenceRoom(obj,Company,Tenant,reqId,callback){
@@ -24,8 +25,8 @@ function AddConferenceRoom(obj,Company,Tenant,reqId,callback){
                         DbConn.Conference.find({where:[{CompanyId:Company},{TenantId:Tenant},{ExtensionId:resExt.id}]}).then(function (resConfExt) {
                             if(resConfExt)
                             {
-                                logger.error('[DVP-Conference.NewConference] - [%s] - [PGSQL] - Extension is already in use : Extension : %s',reqId,obj.Extension);
-                                callback(new Error("Extension is already in use : Extension : ",obj.Extension),undefined);
+                                logger.error('[DVP-Conference.NewConference] - [%s] - [PGSQL] - Extension is already in use',reqId);
+                                callback(new Error("Extension is already in use"),undefined);
                             }
                             else
                             {
@@ -46,7 +47,8 @@ function AddConferenceRoom(obj,Company,Tenant,reqId,callback){
                                         Domain :obj.Domain,
                                         IsLocked :obj.IsLocked,
                                         MaxUser: obj.MaxUser,
-                                        ActiveTemplate:obj.ActiveTemplate
+                                        ActiveTemplate:obj.ActiveTemplate,
+                                        CloudEndUserId:obj.CloudEndUserId
 
 
 
@@ -81,8 +83,6 @@ function AddConferenceRoom(obj,Company,Tenant,reqId,callback){
                         logger.error('[DVP-Conference.NewConference] - [%s] - [PGSQL] - Invalid Extension received : Extension : %s',reqId,obj.Extension);
                         callback(new Error("Invalid Extension received : Extension : ",obj.Extension),undefined);
                     }
-
-
 
 
 
@@ -147,7 +147,9 @@ function UpdateConference(CName,obj,Company,Tenant,reqId,callback)
                     MaxUser:obj.MaxUser,
                     StartTime: obj.StartTime,
                     EndTime: obj.EndTime,
-                    ActiveTemplate:obj.ActiveTemplate
+                    ActiveTemplate:obj.ActiveTemplate,
+                    CloudEndUserId:obj.CloudEndUserId
+
                 }
 
 
@@ -158,14 +160,30 @@ function UpdateConference(CName,obj,Company,Tenant,reqId,callback)
                     updateObject.ExtensionId=validExtensionID;
                 }
 
-                DbConn.Conference.updateAttributes(updateObject,{where:[{ConferenceName:CName}]}).then(function(resCUpdate)
-                    {
-                        callback(undefined,resCUpdate);
 
-                    }).catch(function(errCUpdate)
+                DbConn.Conference.find({where:[{CompanyId :  Company},{TenantId: Tenant},{ConferenceName:CName}]}).then(function (resConf) {
+
+                    if(resConf)
                     {
-                        callback(errCUpdate,undefined);
-                    });
+                        resConf.updateAttributes(updateObject).then(function(resCUpdate)
+                        {
+                            callback(undefined,resCUpdate);
+
+                        }).catch(function(errCUpdate)
+                        {
+                            callback(errCUpdate,undefined);
+                        });
+                    }
+                    else
+                    {
+                        callback(new Error("Error in searching conference"),undefined);
+                    }
+
+                }).catch(function (errConf) {
+                    callback(errConf,undefined);
+                })
+
+
             }
             else
             {
@@ -697,7 +715,7 @@ var validateExtension = function (conference,extension,company,tenant) {
                 }
                 else if(resConf.ConferenceName==conference)
                 {
-                    return false;
+                    return resExt.id;
                 }
                 else
                 {
@@ -715,6 +733,94 @@ var validateExtension = function (conference,extension,company,tenant) {
 
 }
 
+
+var PickValidExtensions = function (conference,company,tenant,callback) {
+
+    var AllExtensions=[];
+    var usedExtensions=[];
+    var EligibleList = [];
+
+    DbConn.Extension.findAll({where:[{CompanyId: company}, {TenantId: tenant}, {ObjCategory: "CONFERENCE"}]}).then(function (resExtensions) {
+
+        AllExtensions=resExtensions;
+
+        DbConn.Conference.findAll({where:[{CompanyId:company},{TenantId:tenant}],include : [{model: DbConn.Extension, as: 'Extension'}]}).then(function (resConfExt) {
+
+            for(var i=0;i<resConfExt.length;i++)
+            {
+                usedExtensions.push(resConfExt[i].Extension);
+
+                if(i==resConfExt.length-1)
+                {
+                    EligibleList=getValidExtensionList(AllExtensions,usedExtensions);
+                    //callback(undefined,EligibleList);
+                    if(conference)
+                    {
+                        DbConn.Conference.find({where:[{CompanyId:company},{TenantId:tenant},{ConferenceName:conference}],include : [{model: DbConn.Extension, as: 'Extension'}]}).then(function (resCurrentConf) {
+
+                            if(resCurrentConf)
+                            {
+                                EligibleList.push(resCurrentConf.Extension);
+                                callback(undefined,EligibleList);
+                            }
+                            else
+                            {
+                                callback(undefined,EligibleList);
+                            }
+                        }).catch(function (errCurrentConf) {
+                            callback(errCurrentConf,undefined);
+                        });
+
+                    }
+                    else
+                    {
+                        callback(undefined,EligibleList);
+                    }
+
+
+                }
+            }
+
+
+
+        }).catch(function (errConfExt) {
+            callback(errConfExt,undefined);
+        });
+
+    }).catch(function (errExtensions) {
+        callback(errExtensions,undefined);
+    });
+
+};
+
+
+var getValidExtensionList = function (allList,selectedList) {
+
+    var eligibleList =[];
+    var len = allList.length;
+    var j = 0;
+    for(var i=0;i<len;i++)
+    {
+        var even = underscore.find(selectedList, function(ext)
+        {
+            return ext.Extension === allList[j].Extension;
+        });
+
+        if(even)
+        {
+            allList.splice(j, 1);
+
+        }
+        else
+        {
+            j++;
+        }
+    }
+
+    return allList;
+
+}
+
 module.exports.AddConferenceRoom = AddConferenceRoom;
 module.exports.UpdateConference = UpdateConference;
 module.exports.DeleteConference = DeleteConference;
@@ -729,3 +835,7 @@ module.exports.GetConferenceRoomsOfCompanyWithPaging = GetConferenceRoomsOfCompa
 module.exports.GetCountOfConferenceRooms = GetCountOfConferenceRooms;
 module.exports.GetActiveConferenceRooms = GetActiveConferenceRooms;
 module.exports.GetActiveConferenceRoomCount = GetActiveConferenceRoomCount;
+module.exports.validateExtension = validateExtension;
+module.exports.getValidExtensionList = getValidExtensionList;
+module.exports.PickValidExtensions = PickValidExtensions;
+

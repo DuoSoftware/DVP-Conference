@@ -35,7 +35,6 @@ RestServer.use(jwt({secret: secret.Secret}));
 //Server listen
 RestServer.listen(port, function () {
     console.log('%s listening at %s', RestServer.name, RestServer.url);
-
 });
 //Enable request body parsing(access)
 RestServer.use(restify.bodyParser());
@@ -1036,7 +1035,7 @@ RestServer.get('/DVP/API/'+version+'/ConferenceConfiguration/ConferenceUser/:Use
 
 
 
-RestServer.post('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/Mute',authorization({resource:"conference", action:"read"}),function(req,res,next)
+RestServer.post('/DVP/API/'+version+'/ConferenceOperations/:ConferenceName/ConferenceUser/:User/Mute',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
@@ -1058,14 +1057,14 @@ RestServer.post('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/
 
         var Company = req.user.company;
         var Tenant = req.user.tenant;
+        var conference=req.params.ConferenceName;
 
 
-        User.GetUserConference(req.params.User,Company,Tenant,reqId,function(errConf,resConf)
+        /*User.GetUserConference(req.params.User,Company,Tenant,reqId,function(errConf,resConf)
         {
             if(errConf)
             {
                 var jsonString = messageFormatter.FormatMessage(errConf, "ERROR/EXCEPTION", false, undefined);
-
                 res.end(jsonString);
             }
             else
@@ -1078,16 +1077,18 @@ RestServer.post('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/
                         if(err)
                         {
 
-
                             var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
-
                             res.end(jsonString);
                         }
                         else if(resz)
                         {
 
                             var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
-
+                            res.end(jsonString);
+                        }
+                        else
+                        {
+                            var jsonString = messageFormatter.FormatMessage(new Error("Error in operation"), "ERROR/EXCEPTION", false, resz);
                             res.end(jsonString);
                         }
 
@@ -1098,11 +1099,35 @@ RestServer.post('/DVP/API/'+version+'/ConferenceOperations/ConferenceUser/:User/
                 {
 
                     var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
-
                     res.end(jsonString);
                 }
             }
+        });*/
+
+
+        User.MuteUser(conference,req.params.User,reqId,function(err,resz)
+        {
+
+            if(err)
+            {
+
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                res.end(jsonString);
+            }
+            else if(resz)
+            {
+
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                res.end(jsonString);
+            }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(new Error("Error in operation"), "ERROR/EXCEPTION", false, resz);
+                res.end(jsonString);
+            }
+
         });
+
 
     }
     catch(ex)
@@ -2077,6 +2102,274 @@ RestServer.post('/DVP/API/:version/ConferenceConfiguration/Conference/:confName/
 
 });
 
+
+RestServer.get('/DVP/API/:version/ConferenceConfiguration/Conference/AvailableExtensions', authorization({resource:"conference", action:"write"}), function(req, res, next)
+{
+    var reqId = uuid.v1();
+    try
+    {
+        logger.debug('[DVP-Conference.AvailableExtensionsOfConference] - [%s] - HTTP Request Received - Params :Extension', reqId);
+
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
+
+        Room.PickValidExtensions(null,companyId,tenantId, function (errValidExt,resVaildExt) {
+
+            if(errValidExt)
+            {
+                logger.error('[DVP-Conference.AvailableExtensionsOfConference] - [%s] - Exception Occurred', reqId, errValidExt);
+                var jsonString = messageFormatter.FormatMessage(errValidExt, "Exception occurred", false, false);
+                logger.debug('[DVP-Conference.AvailableExtensionsOfConference] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(undefined, "Success", true, resVaildExt);
+                logger.debug('[DVP-Conference.AvailableExtensionsOfConference] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+
+        });
+
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-Conference.AvailableExtensionsOfConference] - [%s] - Exception Occurred', reqId, ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "Exception occurred", false, false);
+        logger.debug('[DVP-Conference.AvailableExtensionsOfConference] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonString);
+
+    }
+    return next();
+
+});
+
+RestServer.get('/DVP/API/:version/ConferenceConfiguration/Conference/:ConferenceName/AvailableExtensions', authorization({resource:"conference", action:"write"}), function(req, res, next)
+{
+    var reqId = uuid.v1();
+    try
+    {
+        logger.debug('[DVP-Conference.AvailableExtensions] - [%s] - HTTP Request Received - Params :Extension', reqId);
+
+        var conferenceName=req.params.ConferenceName;
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
+
+        Room.PickValidExtensions(conferenceName,companyId,tenantId, function (errValidExt,resVaildExt) {
+
+            if(errValidExt)
+            {
+                logger.error('[DVP-Conference.AvailableExtensions] - [%s] - Exception Occurred', reqId, errValidExt);
+                var jsonString = messageFormatter.FormatMessage(errValidExt, "Exception occurred", false, false);
+                logger.debug('[DVP-Conference.AvailableExtensions] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(undefined, "Success", true, resVaildExt);
+                logger.debug('[DVP-Conference.AvailableExtensions] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+
+        });
+
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-Conference.CheckExtensionAvailability] - [%s] - Exception Occurred', reqId, ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "Exception occurred", false, false);
+        logger.debug('[DVP-Conference.CheckExtensionAvailability] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonString);
+
+    }
+    return next();
+
+});
+
+
+RestServer.post('/DVP/API/'+version+'/ConferenceOperations/:ConferenceName/ConferenceUser/:User/:Operation',authorization({resource:"conference", action:"read"}),function(req,res,next)
+{
+    var reqId='';
+
+    try
+    {
+        reqId = uuid.v1();
+    }
+    catch(ex)
+    {
+
+    }
+
+    try
+    {
+        if(!req.user.company || !req.user.tenant)
+        {
+            throw new Error("Invalid company or tenant");
+        }
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+        var conference=req.params.ConferenceName;
+        var confUser=req.params.User;
+        var operation=req.params.Operation;
+
+
+        /*User.GetUserConference(req.params.User,Company,Tenant,reqId,function(errConf,resConf)
+         {
+         if(errConf)
+         {
+         var jsonString = messageFormatter.FormatMessage(errConf, "ERROR/EXCEPTION", false, undefined);
+         res.end(jsonString);
+         }
+         else
+         {
+         try {
+
+         User.MuteUser(resConf,req.params.User,reqId,function(err,resz)
+         {
+
+         if(err)
+         {
+
+         var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+         res.end(jsonString);
+         }
+         else if(resz)
+         {
+
+         var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+         res.end(jsonString);
+         }
+         else
+         {
+         var jsonString = messageFormatter.FormatMessage(new Error("Error in operation"), "ERROR/EXCEPTION", false, resz);
+         res.end(jsonString);
+         }
+
+         });
+
+         }
+         catch(ex)
+         {
+
+         var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+         res.end(jsonString);
+         }
+         }
+         });*/
+
+
+        User.manageConfUserStatus(conference,confUser,operation,reqId,function(err,resz)
+        {
+
+            if(err)
+            {
+
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                res.end(jsonString);
+            }
+            else if(resz)
+            {
+
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                res.end(jsonString);
+            }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(new Error("Error in operation"), "ERROR/EXCEPTION", false, resz);
+                res.end(jsonString);
+            }
+
+        });
+
+
+    }
+    catch(ex)
+    {
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        res.end(jsonString);
+    }
+
+
+    next();
+});
+
+
+RestServer.get('/DVP/API/:version/ConferenceConfiguration/Extension/:Extension/Availability', authorization({resource:"conference", action:"write"}), function(req, res, next)
+{
+    var reqId = uuid.v1();
+    try
+    {
+        logger.debug('[DVP-Conference.ExtensionAvailability] - [%s] - HTTP Request Received - Params :Extension', reqId);
+
+        var Extension=req.params.Extension;
+        var companyId = req.user.company;
+        var tenantId = req.user.tenant;
+
+        if (!companyId || !tenantId)
+        {
+            throw new Error("Invalid company or tenant");
+        }
+
+        Room.PickValidExtensions(null,companyId,tenantId, function (errValidExt,resVaildExt) {
+
+            if(errValidExt)
+            {
+                logger.error('[DVP-Conference.AvailableExtensions] - [%s] - Exception Occurred', reqId, errValidExt);
+                var jsonString = messageFormatter.FormatMessage(errValidExt, "Exception occurred", false, false);
+                logger.debug('[DVP-Conference.AvailableExtensions] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+            else
+            {
+                var availability=CheckExtensionAvailability(Extension,resVaildExt)
+
+                var jsonString = messageFormatter.FormatMessage(undefined, "Success", true, availability);
+                logger.debug('[DVP-Conference.AvailableExtensions] - [%s] - API RESPONSE : %s', reqId, jsonString);
+                res.end(jsonString);
+            }
+
+        });
+
+    }
+    catch(ex)
+    {
+        logger.error('[DVP-Conference.CheckExtensionAvailability] - [%s] - Exception Occurred', reqId, ex);
+        var jsonString = messageFormatter.FormatMessage(ex, "Exception occurred", false, false);
+        logger.debug('[DVP-Conference.CheckExtensionAvailability] - [%s] - API RESPONSE : %s', reqId, jsonString);
+        res.end(jsonString);
+
+    }
+    return next();
+
+});
+
+function CheckExtensionAvailability(extension,extList)
+{
+    for(var i=0;i<extList.length;i++)
+    {
+        if(extList[i].Extension==extension)
+        {
+            return false;
+        }
+
+        if(i==extList.length-1)
+        {
+            return true;
+        }
+
+    }
+}
 
 function Crossdomain(req,res,next){
 
