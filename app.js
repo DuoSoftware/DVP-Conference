@@ -2154,7 +2154,7 @@ RestServer.get('/DVP/API/:version/ConferenceConfiguration/Conference/:Conference
     var reqId = uuid.v1();
     try
     {
-        logger.debug('[DVP-Conference.AvailableExtensions] - [%s] - HTTP Request Received - Params :Extension', reqId);
+        logger.debug('[DVP-Conference.AvailableExtensions] - [%s] - HTTP Request Received', reqId);
 
         var conferenceName=req.params.ConferenceName;
         var companyId = req.user.company;
