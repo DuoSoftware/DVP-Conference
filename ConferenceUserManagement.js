@@ -988,11 +988,12 @@ function UnLockRoom(confName,reqId,callback)
 }
 
 
-function GetCallServerID(CSName,reqId,callback)
+function GetCallServerID(confName,reqId,callback)
 {
 
-    client.HGET(CSName,'SwitchName',function(err,res)
+    client.HGET(confName,'SwitchName',function(err,res)
     {
+        console.log(res);
         callback(err,res);
     });
 
@@ -1338,7 +1339,8 @@ function usersOfConference(confName,Company,Tenant,reqId,callback)
 
 function manageConfUserStatus(confName,User,operation,reqId,callback)
 {
-    GetCallServerID(confName,reqId,function(errCS,resCS)
+    var conferenceName="CONFERENCE:"+confName;
+    GetCallServerID(conferenceName,reqId,function(errCS,resCS)
     {
         if(errCS)
         {
@@ -1354,28 +1356,39 @@ function manageConfUserStatus(confName,User,operation,reqId,callback)
                 }
                 else
                 {
-                    var httpUrl=resIP+':8080/api/conference?'+confName+" "+operation+" ?"+User;
-                    var options = {
-                        url: httpUrl,
-                        method : 'POST',
-                    };
 
-                    httpReq(options, function (error, response, body)
+                    if(resIP.InternalMainIP)
                     {
-                        if (!error && response.statusCode == 200)
-                        {
-                            var apiResp = JSON.parse(body);
+                        confName=confName.replace(" ","%27%20%27");
+                        var httpUrl="http://"+resIP.InternalMainIP+':8080/api/conference?'+confName+" "+operation+" "+User;
+                        var options = {
+                            url: httpUrl,
+                            method : 'POST'
+                        };
 
-                            //logger.debug('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api returned : %s', reqId, body);
-
-                            callback(apiResp.Exception, apiResp.Result);
-                        }
-                        else
+                        httpReq(options, function (error, response, body)
                         {
-                            //logger.error('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api call failed', reqId, error);
-                            callback(error, undefined);
-                        }
-                    });
+                            if (!error && response.statusCode == 200)
+                            {
+                                var apiResp = JSON.parse(body);
+
+                                //logger.debug('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api returned : %s', reqId, body);
+
+                                callback(apiResp.Exception, apiResp.Result);
+                            }
+                            else
+                            {
+                                //logger.error('[DVP-PBXService.RemoteGetSipUserDetailsForExtension] - [%s] - Sip UAC Api call failed', reqId, error);
+                                callback(error, undefined);
+                            }
+                        });
+                    }
+                    else
+                    {
+                        callback(new Error("No Callserver IP found"),undefined);
+                    }
+
+
                 }
             });
         }
@@ -1383,7 +1396,8 @@ function manageConfUserStatus(confName,User,operation,reqId,callback)
 }
 function manageAllConfUserStatus(confName,operation,reqId,callback)
 {
-    GetCallServerID(confName,reqId,function(errCS,resCS)
+    var conferenceName="CONFERENCE:"+confName;
+    GetCallServerID(conferenceName,reqId,function(errCS,resCS)
     {
         if(errCS)
         {
