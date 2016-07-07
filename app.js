@@ -2197,7 +2197,9 @@ RestServer.get('/DVP/API/:version/ConferenceConfiguration/Conference/:Conference
 });
 
 
-RestServer.post('/DVP/API/'+version+'/ConferenceOperations/:ConferenceName/ConferenceUser/:User/:Operation',authorization({resource:"conference", action:"read"}),function(req,res,next)
+
+
+RestServer.post('/DVP/API/'+version+'/ConferenceOperations/:ConferenceName/ConferenceUser/:User/Action/:Operation',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
 
@@ -2304,6 +2306,113 @@ RestServer.post('/DVP/API/'+version+'/ConferenceOperations/:ConferenceName/Confe
     next();
 });
 
+
+RestServer.post('/DVP/API/'+version+'/ConferenceOperations/:ConferenceName/ConferenceUsers/:Operation',authorization({resource:"conference", action:"read"}),function(req,res,next)
+{
+    var reqId='';
+
+    try
+    {
+        reqId = uuid.v1();
+    }
+    catch(ex)
+    {
+
+    }
+
+    try
+    {
+        if(!req.user.company || !req.user.tenant)
+        {
+            throw new Error("Invalid company or tenant");
+        }
+
+        var Company = req.user.company;
+        var Tenant = req.user.tenant;
+        var conference=req.params.ConferenceName;
+        var confUser=req.params.User;
+        var operation=req.params.Operation;
+
+
+        /*User.GetUserConference(req.params.User,Company,Tenant,reqId,function(errConf,resConf)
+         {
+         if(errConf)
+         {
+         var jsonString = messageFormatter.FormatMessage(errConf, "ERROR/EXCEPTION", false, undefined);
+         res.end(jsonString);
+         }
+         else
+         {
+         try {
+
+         User.MuteUser(resConf,req.params.User,reqId,function(err,resz)
+         {
+
+         if(err)
+         {
+
+         var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+         res.end(jsonString);
+         }
+         else if(resz)
+         {
+
+         var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+         res.end(jsonString);
+         }
+         else
+         {
+         var jsonString = messageFormatter.FormatMessage(new Error("Error in operation"), "ERROR/EXCEPTION", false, resz);
+         res.end(jsonString);
+         }
+
+         });
+
+         }
+         catch(ex)
+         {
+
+         var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+         res.end(jsonString);
+         }
+         }
+         });*/
+
+
+        User.manageAllConfUserStatus(conference,operation,reqId,function(err,resz)
+        {
+
+            if(err)
+            {
+
+                var jsonString = messageFormatter.FormatMessage(err, "ERROR/EXCEPTION", false, undefined);
+                res.end(jsonString);
+            }
+            else if(resz)
+            {
+
+                var jsonString = messageFormatter.FormatMessage(undefined, "SUCCESS", true, resz);
+                res.end(jsonString);
+            }
+            else
+            {
+                var jsonString = messageFormatter.FormatMessage(new Error("Error in operation"), "ERROR/EXCEPTION", false, resz);
+                res.end(jsonString);
+            }
+
+        });
+
+
+    }
+    catch(ex)
+    {
+        var jsonString = messageFormatter.FormatMessage(ex, "EXCEPTION", false, undefined);
+        res.end(jsonString);
+    }
+
+
+    next();
+});
 
 RestServer.get('/DVP/API/:version/ConferenceConfiguration/Extension/:Extension/Availability', authorization({resource:"conference", action:"write"}), function(req, res, next)
 {
