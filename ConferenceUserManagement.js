@@ -1399,7 +1399,7 @@ function manageAllConfUserStatus(confName,operation,reqId,callback)
                 }
                 else
                 {
-                    var httpUrl=resIP+':8080/api/conference?'+confName+" "+operation+" ? all";
+                    var httpUrl=resIP+':8080/api/conference?'+confName+" "+operation+" ?all";
                     var options = {
                         url: httpUrl,
                         method : 'POST',

@@ -2197,8 +2197,6 @@ RestServer.get('/DVP/API/:version/ConferenceConfiguration/Conference/:Conference
 });
 
 
-
-
 RestServer.post('/DVP/API/'+version+'/ConferenceOperations/:ConferenceName/ConferenceUser/:User/Action/:Operation',authorization({resource:"conference", action:"read"}),function(req,res,next)
 {
     var reqId='';
