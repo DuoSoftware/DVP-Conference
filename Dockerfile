@@ -8,7 +8,8 @@
 #EXPOSE 8821
 
 FROM node:5.10.0
-RUN git clone git://github.com/DuoSoftware/DVP-Conference.git /usr/local/src/conference
+ARG VERSION_TAG
+RUN git clone -b $VERSION_TAG https://github.com/DuoSoftware/DVP-Conference.git /usr/local/src/conference
 RUN cd /usr/local/src/conference;
 WORKDIR /usr/local/src/conference
 RUN npm install
