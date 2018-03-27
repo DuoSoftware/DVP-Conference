@@ -7,7 +7,7 @@
 
 #EXPOSE 8821
 
-FROM node:5.10.0
+FROM node:9.9.0
 ARG VERSION_TAG
 RUN git clone -b $VERSION_TAG https://github.com/DuoSoftware/DVP-Conference.git /usr/local/src/conference
 RUN cd /usr/local/src/conference;
