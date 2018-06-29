@@ -746,6 +746,12 @@ var PickValidExtensions = function (conference,company,tenant,callback) {
 
         DbConn.Conference.findAll({where:[{CompanyId:company},{TenantId:tenant}],include : [{model: DbConn.Extension, as: 'Extension'}]}).then(function (resConfExt) {
 
+            if(resConfExt.length==0)
+            {
+                callback(underscore,resExtensions);
+            }
+
+
             for(var i=0;i<resConfExt.length;i++)
             {
                 usedExtensions.push(resConfExt[i].Extension);
