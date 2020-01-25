@@ -7,11 +7,21 @@
 
 #EXPOSE 8821
 
-FROM node:9.9.0
-ARG VERSION_TAG
-RUN git clone -b $VERSION_TAG https://github.com/DuoSoftware/DVP-Conference.git /usr/local/src/conference
-RUN cd /usr/local/src/conference;
+# FROM node:9.9.0
+# ARG VERSION_TAG
+# RUN git clone -b $VERSION_TAG https://github.com/DuoSoftware/DVP-Conference.git /usr/local/src/conference
+# RUN cd /usr/local/src/conference;
+# WORKDIR /usr/local/src/conference
+# RUN npm install
+# EXPOSE 8821
+# CMD [ "node", "/usr/local/src/conference/app.js" ]
+
+
+FROM node:10-alpine
 WORKDIR /usr/local/src/conference
+COPY package*.json ./
 RUN npm install
+COPY . .
 EXPOSE 8821
-CMD [ "node", "/usr/local/src/conference/app.js" ]
+CMD [ "node", "app.js" ]
+
